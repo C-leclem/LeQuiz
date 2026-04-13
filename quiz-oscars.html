@@ -1,0 +1,888 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Oscars du Meilleur Film — CineQuiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Oswald:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --noir: #0a0804;
+      --noir-moyen: #141008;
+      --noir-clair: #1e1810;
+      --or: #c9a84c;
+      --or-clair: #e8c870;
+      --or-pale: #f5e4b0;
+      --creme: #f7f0e0;
+      --rouge: #8b1a1a;
+      --vert: #2a6b3a;
+      --gris: #6b6050;
+    }
+
+    html, body {
+      height: 100%;
+      background: var(--noir);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+    .spotlight {
+      position: fixed;
+      top: -30%;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 700px;
+      height: 800px;
+      background: radial-gradient(ellipse at center top, rgba(201,168,76,0.1) 0%, transparent 65%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .curtain-left, .curtain-right {
+      position: fixed;
+      top: 0;
+      width: 60px;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+    .curtain-left { left: 0; background: linear-gradient(to right, rgba(100,20,20,0.45) 0%, transparent 100%); }
+    .curtain-right { right: 0; background: linear-gradient(to left, rgba(100,20,20,0.45) 0%, transparent 100%); }
+
+    /* ─── PAGE LAYOUT ─── */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      width: 100%;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+
+    .back-link {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: color 0.3s ease;
+    }
+    .back-link:hover { color: var(--or); }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--or);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--gris);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    /* ─── QUIZ HEADER ─── */
+    .quiz-header {
+      text-align: center;
+      padding: 50px 20px 0;
+      animation: fadeDown 0.8s ease both;
+    }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .quiz-category {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 12px;
+    }
+
+    .quiz-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--or-pale);
+      text-shadow: 0 0 40px rgba(201,168,76,0.2);
+    }
+
+    .score-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 24px;
+      padding-bottom: 30px;
+    }
+
+    .score-item {
+      text-align: center;
+    }
+
+    .score-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--or);
+      line-height: 1;
+    }
+
+    .score-val.wrong { color: #c0453a; }
+    .score-val.skip { color: var(--gris); }
+
+    .score-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-top: 4px;
+    }
+
+    .score-sep {
+      width: 1px;
+      height: 30px;
+      background: rgba(201,168,76,0.2);
+    }
+
+    /* ─── QUESTION CARD ─── */
+    .quiz-stage {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      animation: fadeIn 0.5s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .question-card {
+      background: var(--noir-clair);
+      border: 1px solid rgba(201,168,76,0.2);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--or), transparent);
+    }
+
+    .q-year-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 12px;
+    }
+
+    .q-year {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(4rem, 12vw, 7rem);
+      font-weight: 900;
+      color: var(--or);
+      line-height: 1;
+      text-shadow: 0 0 60px rgba(201,168,76,0.2);
+      margin-bottom: 8px;
+    }
+
+    .q-question {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: rgba(247,240,224,0.6);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    /* INPUT */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .answer-input {
+      flex: 1;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(201,168,76,0.25);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+    }
+
+    .answer-input::placeholder {
+      color: rgba(247,240,224,0.2);
+      font-style: italic;
+    }
+
+    .answer-input:focus {
+      border-color: rgba(201,168,76,0.6);
+      box-shadow: 0 0 20px rgba(201,168,76,0.08);
+    }
+
+    .answer-input.correct {
+      border-color: #4caf7a;
+      background: rgba(76,175,122,0.1);
+      color: #a8f0c0;
+    }
+
+    .answer-input.wrong {
+      border-color: #c0453a;
+      background: rgba(192,69,58,0.1);
+      color: #ffaaaa;
+    }
+
+    .submit-btn {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 500;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .submit-btn:hover { background: var(--or-clair); transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+    /* FEEDBACK */
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 52px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+    }
+
+    .feedback.show { opacity: 1; }
+
+    .feedback.correct {
+      background: rgba(76,175,122,0.12);
+      border-left: 3px solid #4caf7a;
+      color: #a8f0c0;
+    }
+
+    .feedback.wrong {
+      background: rgba(192,69,58,0.12);
+      border-left: 3px solid #c0453a;
+      color: #ffaaaa;
+    }
+
+    .feedback.skip {
+      background: rgba(107,96,80,0.15);
+      border-left: 3px solid var(--gris);
+      color: rgba(247,240,224,0.55);
+    }
+
+    .feedback-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+    /* NEXT ROW */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(201,168,76,0.1);
+    }
+
+    .skip-btn {
+      background: none;
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      cursor: pointer;
+      transition: color 0.3s ease;
+      padding: 0;
+    }
+    .skip-btn:hover { color: var(--or-pale); }
+
+    .next-btn {
+      background: none;
+      border: 1px solid rgba(201,168,76,0.35);
+      color: var(--or);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .next-btn:hover {
+      background: rgba(201,168,76,0.1);
+      border-color: var(--or);
+    }
+
+    /* PROGRESS BAR */
+    .progress-outer {
+      width: 100%;
+      height: 3px;
+      background: rgba(201,168,76,0.1);
+      margin-top: 24px;
+    }
+
+    .progress-inner {
+      height: 100%;
+      background: linear-gradient(to right, var(--or), var(--or-clair));
+      transition: width 0.5s ease;
+    }
+
+    /* ─── FIN DE QUIZ ─── */
+    .end-screen {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      text-align: center;
+      display: none;
+    }
+
+    .end-screen.show { display: block; animation: fadeIn 0.8s ease both; }
+
+    .trophy-big { font-size: 5rem; margin-bottom: 24px; display: block; animation: trophydrop 0.8s cubic-bezier(0.34,1.56,0.64,1) both 0.2s; }
+
+    @keyframes trophydrop {
+      from { transform: scale(0) rotate(-15deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .end-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      color: var(--or-pale);
+      margin-bottom: 12px;
+    }
+
+    .end-score {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      color: var(--gris);
+      margin-bottom: 40px;
+    }
+
+    .end-score strong {
+      font-weight: 500;
+      color: var(--or);
+      font-size: 1.4rem;
+    }
+
+    .end-message {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: rgba(247,240,224,0.55);
+      line-height: 1.8;
+      max-width: 400px;
+      margin: 0 auto 44px;
+    }
+
+    .restart-btn {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+    .restart-btn:hover { background: var(--or-clair); }
+
+    /* ─── CONFETTI STARS ─── */
+    .star-burst {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      font-size: 1.2rem;
+      animation: starfly 1.4s ease forwards;
+    }
+
+    @keyframes starfly {
+      0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(360deg); opacity: 0; }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 500px) {
+      .question-card { padding: 24px 20px; }
+      .input-row { flex-direction: column; }
+      .submit-btn { width: 100%; }
+      .score-bar { gap: 16px; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="spotlight"></div>
+  <div class="curtain-left"></div>
+  <div class="curtain-right"></div>
+
+  <div class="page">
+
+    <nav class="top-nav">
+      <a href="index.html" class="back-link">← Accueil</a>
+      <a href="index.html" class="nav-logo">CineQuiz</a>
+      <div class="progress-wrap">
+        <span class="progress-text" id="progressText">1 / 98</span>
+      </div>
+    </nav>
+
+    <!-- En-tête quiz -->
+    <div class="quiz-header">
+      <p class="quiz-category">✦ Palmarès Hollywood ✦</p>
+      <h1 class="quiz-title">Oscars du Meilleur Film</h1>
+      <div class="score-bar">
+        <div class="score-item">
+          <div class="score-val" id="scoreCorrect">0</div>
+          <div class="score-label">Correct</div>
+        </div>
+        <div class="score-sep"></div>
+        <div class="score-item">
+          <div class="score-val wrong" id="scoreWrong">0</div>
+          <div class="score-label">Raté</div>
+        </div>
+        <div class="score-sep"></div>
+        <div class="score-item">
+          <div class="score-val skip" id="scoreSkip">0</div>
+          <div class="score-label">Passé</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barre de progression -->
+    <div class="progress-outer" style="max-width:620px;width:calc(100% - 40px);">
+      <div class="progress-inner" id="progressBar" style="width:1%"></div>
+    </div>
+
+    <!-- Scène du quiz -->
+    <div class="quiz-stage" id="quizStage">
+      <div class="question-card">
+        <p class="q-year-label">Quelle année ?</p>
+        <div class="q-year" id="qYear">—</div>
+        <p class="q-question">Quel film a remporté l'Oscar du Meilleur Film cette année‑là ?</p>
+        <div class="input-row">
+          <input
+            type="text"
+            class="answer-input"
+            id="answerInput"
+            placeholder="Votre réponse…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="submit-btn" id="submitBtn">OK</button>
+        </div>
+        <div class="feedback" id="feedback">
+          <span class="feedback-icon"></span>
+          <span id="feedbackText"></span>
+        </div>
+        <div class="action-row">
+          <button class="skip-btn" id="skipBtn">Passer →</button>
+          <button class="next-btn" id="nextBtn" style="display:none">Question suivante →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran de fin -->
+    <div class="end-screen" id="endScreen">
+      <span class="trophy-big">🏆</span>
+      <h2 class="end-title">Bravo !</h2>
+      <p class="end-score">Score final&nbsp;: <strong id="finalScore">—</strong></p>
+      <p class="end-message" id="endMessage">Vous avez traversé toute l'histoire des Oscars. Le rideau tombe.</p>
+      <button class="restart-btn" id="restartBtn">Rejouer depuis le début</button>
+    </div>
+
+  </div>
+
+  <script>
+  // ─── DONNÉES ───────────────────────────────────────────────────────────
+  const QUESTIONS = [
+    { year: "1929", answer: "Les Ailes" },
+    { year: "1930 (avril)", answer: "Broadway Melody" },
+    { year: "1930 (novembre)", answer: "À l'ouest rien de nouveau" },
+    { year: "1931", answer: "La Ruée vers l'Ouest" },
+    { year: "1932", answer: "Grand Hotel" },
+    { year: "1934", answer: "Cavalcade" },
+    { year: "1935", answer: "New York-Miami" },
+    { year: "1936", answer: "Les Révoltés du Bounty" },
+    { year: "1937", answer: "Le Grand Ziegfeld" },
+    { year: "1938", answer: "La Vie d'Émile Zola" },
+    { year: "1939", answer: "Vous ne l'emporterez pas avec vous" },
+    { year: "1940", answer: "Autant en emporte le vent" },
+    { year: "1942", answer: "Qu'elle était verte ma vallée" },
+    { year: "1943", answer: "Madame Miniver" },
+    { year: "1944", answer: "Casablanca" },
+    { year: "1945", answer: "La Route semée d'étoiles" },
+    { year: "1946", answer: "Le Poison" },
+    { year: "1947", answer: "Les Plus Belles Années de notre vie" },
+    { year: "1948", answer: "Le Mur invisible" },
+    { year: "1949", answer: "Hamlet" },
+    { year: "1950", answer: "Les Fous du roi" },
+    { year: "1951", answer: "Ève" },
+    { year: "1952", answer: "Un Américain à Paris" },
+    { year: "1953", answer: "Sous le plus grand chapiteau du monde" },
+    { year: "1954", answer: "Tant qu'il y aura des hommes" },
+    { year: "1955", answer: "Sur les quais" },
+    { year: "1956", answer: "Marty" },
+    { year: "1957", answer: "Le Tour du monde en quatre-vingts jours" },
+    { year: "1958", answer: "Le Pont de la rivière Kwaï" },
+    { year: "1959", answer: "Gigi" },
+    { year: "1960", answer: "Ben-Hur" },
+    { year: "1961", answer: "La Garçonnière" },
+    { year: "1962", answer: "West Side Story" },
+    { year: "1963", answer: "Lawrence d'Arabie" },
+    { year: "1964", answer: "Tom Jones" },
+    { year: "1965", answer: "My Fair Lady" },
+    { year: "1966", answer: "La Mélodie du bonheur" },
+    { year: "1967", answer: "Un homme pour l'éternité" },
+    { year: "1968", answer: "Dans la chaleur de la nuit" },
+    { year: "1969", answer: "Oliver !" },
+    { year: "1970", answer: "Macadam Cowboy" },
+    { year: "1971", answer: "Patton" },
+    { year: "1972", answer: "French Connection" },
+    { year: "1973", answer: "Le Parrain" },
+    { year: "1974", answer: "L'Arnaque" },
+    { year: "1975", answer: "Le Parrain 2" },
+    { year: "1976", answer: "Vol au-dessus d'un nid de coucou" },
+    { year: "1977", answer: "Rocky" },
+    { year: "1978", answer: "Annie Hall" },
+    { year: "1979", answer: "Voyage au bout de l'enfer" },
+    { year: "1980", answer: "Kramer contre Kramer" },
+    { year: "1981", answer: "Des gens comme les autres" },
+    { year: "1982", answer: "Les Chariots de feu" },
+    { year: "1983", answer: "Gandhi" },
+    { year: "1984", answer: "Tendres Passions" },
+    { year: "1985", answer: "Amadeus" },
+    { year: "1986", answer: "Out of Africa" },
+    { year: "1987", answer: "Platoon" },
+    { year: "1988", answer: "Le Dernier Empereur" },
+    { year: "1989", answer: "Rain Man" },
+    { year: "1990", answer: "Miss Daisy et son chauffeur" },
+    { year: "1991", answer: "Danse avec les loups" },
+    { year: "1992", answer: "Le Silence des agneaux" },
+    { year: "1993", answer: "Impitoyable" },
+    { year: "1994", answer: "La Liste de Schindler" },
+    { year: "1995", answer: "Forrest Gump" },
+    { year: "1996", answer: "Braveheart" },
+    { year: "1997", answer: "Le Patient anglais" },
+    { year: "1998", answer: "Titanic" },
+    { year: "1999", answer: "Shakespeare in Love" },
+    { year: "2000", answer: "American Beauty" },
+    { year: "2001", answer: "Gladiator" },
+    { year: "2002", answer: "Un homme d'exception" },
+    { year: "2003", answer: "Chicago" },
+    { year: "2004", answer: "Le Seigneur des anneaux : Le Retour du roi" },
+    { year: "2005", answer: "Million Dollar Baby" },
+    { year: "2006", answer: "Collision" },
+    { year: "2007", answer: "Les Infiltrés" },
+    { year: "2008", answer: "No Country for Old Men" },
+    { year: "2009", answer: "Slumdog Millionaire" },
+    { year: "2010", answer: "Démineurs" },
+    { year: "2011", answer: "Le Discours d'un roi" },
+    { year: "2012", answer: "The Artist" },
+    { year: "2013", answer: "Argo" },
+    { year: "2014", answer: "Twelve Years a Slave" },
+    { year: "2015", answer: "Birdman" },
+    { year: "2016", answer: "Spotlight" },
+    { year: "2017", answer: "Moonlight" },
+    { year: "2018", answer: "La Forme de l'eau" },
+    { year: "2019", answer: "Green Book" },
+    { year: "2020", answer: "Parasite" },
+    { year: "2021", answer: "Nomadland" },
+    { year: "2022", answer: "Coda" },
+    { year: "2023", answer: "Everything Everywhere All at Once" },
+    { year: "2024", answer: "Oppenheimer" },
+    { year: "2025", answer: "Anora" },
+    { year: "2026", answer: "Une bataille après l'autre" },
+  ];
+
+  // ─── NORMALISATION ─────────────────────────────────────────────────────
+  // Supprime accents, ponctuation, espaces superflus, met en minuscules
+  function normalize(str) {
+    return str
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // accents
+      .toLowerCase()
+      .replace(/['']/g, "'")
+      .replace(/[^a-z0-9 ']/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  // Vérifie si la réponse est acceptable (correspondance exacte ou partielle tolérée)
+  function checkAnswer(input, expected) {
+    const n = normalize(input);
+    const e = normalize(expected);
+    if (n === e) return true;
+    // Tolérance : si l'input est contenu dans la réponse et vice versa à > 85%
+    if (e.includes(n) && n.length >= Math.floor(e.length * 0.75)) return true;
+    if (n.includes(e)) return true;
+    // Similarité de Jaro-Winkler simplifiée via levenshtein
+    if (levenshtein(n, e) <= Math.floor(e.length * 0.15)) return true;
+    return false;
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m+1 }, (_, i) => Array.from({ length: n+1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[m][n];
+  }
+
+  // ─── ÉTAT ──────────────────────────────────────────────────────────────
+  let current = 0;
+  let scoreCorrect = 0, scoreWrong = 0, scoreSkip = 0;
+  let answered = false;
+
+  // ─── DOM ───────────────────────────────────────────────────────────────
+  const qYear       = document.getElementById('qYear');
+  const answerInput = document.getElementById('answerInput');
+  const submitBtn   = document.getElementById('submitBtn');
+  const skipBtn     = document.getElementById('skipBtn');
+  const nextBtn     = document.getElementById('nextBtn');
+  const feedback    = document.getElementById('feedback');
+  const feedbackText= document.getElementById('feedbackText');
+  const progressText= document.getElementById('progressText');
+  const progressBar = document.getElementById('progressBar');
+  const sCorrect    = document.getElementById('scoreCorrect');
+  const sWrong      = document.getElementById('scoreWrong');
+  const sSkip       = document.getElementById('scoreSkip');
+  const quizStage   = document.getElementById('quizStage');
+  const endScreen   = document.getElementById('endScreen');
+  const finalScore  = document.getElementById('finalScore');
+  const endMessage  = document.getElementById('endMessage');
+  const restartBtn  = document.getElementById('restartBtn');
+
+  // ─── CHARGEMENT D'UNE QUESTION ─────────────────────────────────────────
+  function loadQuestion(idx) {
+    const q = QUESTIONS[idx];
+    answered = false;
+
+    qYear.textContent = q.year;
+    answerInput.value = '';
+    answerInput.className = 'answer-input';
+    answerInput.disabled = false;
+    answerInput.focus();
+    submitBtn.disabled = false;
+
+    feedback.className = 'feedback';
+    feedbackText.textContent = '';
+    feedback.querySelector('.feedback-icon').textContent = '';
+
+    nextBtn.style.display = 'none';
+    skipBtn.style.display = '';
+
+    progressText.textContent = `${idx + 1} / ${QUESTIONS.length}`;
+    progressBar.style.width = `${((idx) / QUESTIONS.length) * 100}%`;
+
+    // Fade in
+    quizStage.style.animation = 'none';
+    void quizStage.offsetWidth;
+    quizStage.style.animation = 'fadeIn 0.4s ease both';
+  }
+
+  // ─── VALIDATION ────────────────────────────────────────────────────────
+  function submit() {
+    if (answered) return;
+    const val = answerInput.value.trim();
+    if (!val) return;
+
+    answered = true;
+    submitBtn.disabled = true;
+    answerInput.disabled = true;
+    skipBtn.style.display = 'none';
+
+    const correct = checkAnswer(val, QUESTIONS[current].answer);
+
+    if (correct) {
+      scoreCorrect++;
+      sCorrect.textContent = scoreCorrect;
+      answerInput.classList.add('correct');
+      feedback.className = 'feedback correct show';
+      feedback.querySelector('.feedback-icon').textContent = '✦';
+      feedbackText.textContent = `Exact ! « ${QUESTIONS[current].answer} »`;
+      burstStars();
+    } else {
+      scoreWrong++;
+      sWrong.textContent = scoreWrong;
+      answerInput.classList.add('wrong');
+      feedback.className = 'feedback wrong show';
+      feedback.querySelector('.feedback-icon').textContent = '✗';
+      feedbackText.textContent = `La bonne réponse était : « ${QUESTIONS[current].answer} »`;
+    }
+
+    nextBtn.style.display = '';
+  }
+
+  // ─── PASSER ────────────────────────────────────────────────────────────
+  function skip() {
+    if (answered) return;
+    answered = true;
+    scoreSkip++;
+    sSkip.textContent = scoreSkip;
+    answerInput.disabled = true;
+    submitBtn.disabled = true;
+    skipBtn.style.display = 'none';
+    feedback.className = 'feedback skip show';
+    feedback.querySelector('.feedback-icon').textContent = '○';
+    feedbackText.textContent = `La réponse était : « ${QUESTIONS[current].answer} »`;
+    nextBtn.style.display = '';
+  }
+
+  // ─── SUIVANT ───────────────────────────────────────────────────────────
+  function next() {
+    current++;
+    if (current >= QUESTIONS.length) {
+      showEnd();
+    } else {
+      loadQuestion(current);
+    }
+  }
+
+  // ─── FIN ───────────────────────────────────────────────────────────────
+  function showEnd() {
+    quizStage.style.display = 'none';
+    endScreen.classList.add('show');
+    progressBar.style.width = '100%';
+    progressText.textContent = `Terminé !`;
+    const pct = Math.round((scoreCorrect / QUESTIONS.length) * 100);
+    finalScore.textContent = `${scoreCorrect} / ${QUESTIONS.length} (${pct}%)`;
+    const msg =
+      pct >= 90 ? "Performance de légende. Vous êtes digne des plus grandes salles." :
+      pct >= 70 ? "Excellent ! Votre culture cinématographique est bien rodée." :
+      pct >= 50 ? "Bonne prestation. Encore quelques films à rattraper…" :
+      pct >= 30 ? "Il reste du chemin — mais le cinéma vous attend." :
+                  "Le septième art vous réserve encore bien des découvertes.";
+    endMessage.textContent = msg;
+  }
+
+  function restart() {
+    current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
+    sCorrect.textContent = '0';
+    sWrong.textContent = '0';
+    sSkip.textContent = '0';
+    endScreen.classList.remove('show');
+    quizStage.style.display = '';
+    loadQuestion(0);
+  }
+
+  // ─── ÉTOILES CONFETTI ──────────────────────────────────────────────────
+  function burstStars() {
+    const emojis = ['✦', '⭐', '★', '✨', '🌟'];
+    for (let i = 0; i < 8; i++) {
+      const el = document.createElement('span');
+      el.className = 'star-burst';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      const x = 40 + Math.random() * (window.innerWidth - 80);
+      const y = window.innerHeight * 0.35 + Math.random() * 100;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+      el.style.setProperty('--dy', -(80 + Math.random() * 160) + 'px');
+      el.style.animationDelay = (i * 0.06) + 's';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  // ─── ÉVÉNEMENTS ────────────────────────────────────────────────────────
+  submitBtn.addEventListener('click', submit);
+  skipBtn.addEventListener('click', skip);
+  nextBtn.addEventListener('click', next);
+  restartBtn.addEventListener('click', restart);
+
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (!answered) submit();
+      else next();
+    }
+  });
+
+  // ─── INIT ──────────────────────────────────────────────────────────────
+  loadQuestion(0);
+  </script>
+
+</body>
+</html>
