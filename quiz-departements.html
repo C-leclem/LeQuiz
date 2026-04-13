@@ -8,18 +8,18 @@
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-    :root {
-      --noir: #0a0804;
-      --noir-moyen: #141008;
-      --noir-clair: #1e1810;
-      --or: #c9a84c;
-      --or-clair: #e8c870;
-      --or-pale: #f5e4b0;
-      --creme: #f7f0e0;
-      --rouge: #8b1a1a;
-      --vert: #2a6b3a;
-      --gris: #6b6050;
-    }
+:root {
+  --noir: #0a1121;        /* Bleu nuit plus géographique */
+  --noir-moyen: #1a1f35;
+  --noir-clair: #252c45;
+  --or: #4a9d6f;          /* Vert forêt français */
+  --or-clair: #6bb88f;
+  --or-pale: #a8d5ba;
+  --creme: #e8f0e5;       /* Blanc cassé naturel */
+  --rouge: #8b4513;       /* Brun terre (regions alpines) */
+  --vert: #2d5a3d;        /* Vert foncé */
+  --gris: #7a8c96;        /* Gris bleu */
+}
 
     html, body {
       height: 100%;
@@ -39,28 +39,20 @@
       opacity: 0.4;
     }
 
-    .spotlight {
-      position: fixed;
-      top: -30%;
-      left: 50%;
-      transform: translateX(-50%);
-      width: 700px;
-      height: 800px;
-      background: radial-gradient(ellipse at center top, rgba(201,168,76,0.1) 0%, transparent 65%);
-      pointer-events: none;
-      z-index: 0;
-    }
+.spotlight {
+  position: fixed;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 800px;
+  background: radial-gradient(ellipse at center top, rgba(74,157,111,0.08) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
 
-    .curtain-left, .curtain-right {
-      position: fixed;
-      top: 0;
-      width: 60px;
-      height: 100%;
-      z-index: 1;
-      pointer-events: none;
-    }
-    .curtain-left { left: 0; background: linear-gradient(to right, rgba(100,20,20,0.45) 0%, transparent 100%); }
-    .curtain-right { right: 0; background: linear-gradient(to left, rgba(100,20,20,0.45) 0%, transparent 100%); }
+.curtain-left { left: 0; background: linear-gradient(to right, rgba(45,90,61,0.3) 0%, transparent 100%); }
+.curtain-right { right: 0; background: linear-gradient(to left, rgba(45,90,61,0.3) 0%, transparent 100%); }
 
     /* ─── PAGE LAYOUT ─── */
     .page {
@@ -143,14 +135,13 @@
       margin-bottom: 12px;
     }
 
-    .quiz-title {
-      font-family: 'Playfair Display', serif;
-      font-size: clamp(2rem, 5vw, 3.2rem);
-      font-weight: 900;
-      color: var(--or-pale);
-      text-shadow: 0 0 40px rgba(201,168,76,0.2);
-    }
-
+   .quiz-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  color: #a8d5ba;
+  text-shadow: 0 0 40px rgba(74,157,111,0.15);
+}
     .score-bar {
       display: flex;
       align-items: center;
@@ -503,16 +494,16 @@
 
     <nav class="top-nav">
       <a href="index.html" class="back-link">← Accueil</a>
-      <a href="index.html" class="nav-logo">CineQuiz</a>
+      <a href="index.html" class="nav-logo">LeQuiz</a>
       <div class="progress-wrap">
-        <span class="progress-text" id="progressText">1 / 98</span>
+        <span class="progress-text" id="progressText">1 / 101</span>
       </div>
     </nav>
 
     <!-- En-tête quiz -->
     <div class="quiz-header">
-      <p class="quiz-category">✦ Cinéma ✦</p>
-      <h1 class="quiz-title">Oscars du Meilleur Film</h1>
+      <p class="quiz-category">✦ Géographie ✦</p>
+      <h1 class="quiz-title">Les départements Français</h1>
       <div class="score-bar">
         <div class="score-item">
           <div class="score-val" id="scoreCorrect">0</div>
@@ -539,7 +530,7 @@
     <!-- Scène du quiz -->
     <div class="quiz-stage" id="quizStage">
       <div class="question-card">
-        <p class="q-year-label">Quelle département ?</p>
+        <p class="q-year-label">Quel département ?</p>
         <div class="q-year" id="qYear">—</div>
         <p class="q-question">Quel département correspond à ce numéro ?</p>
         <div class="input-row">
@@ -608,7 +599,7 @@
     { year: "27", answer: "Eure" },
     { year: "28", answer: "Eure-et-Loir" },
     { year: "29", answer: "Finistère" },
-    { year: "30", answer: "Gardr" },
+    { year: "30", answer: "Gard" },
     { year: "31", answer: "Haute-Garonne" },
     { year: "32", answer: "Gers" },
     { year: "33", answer: "Gironde" },
