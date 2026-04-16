@@ -300,6 +300,35 @@
       margin-bottom: 30px;
     }
 
+    /* CARD TIMER */
+    .card-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+
+    .card-timer-icon {
+      font-size: 1.4rem;
+      opacity: 0.7;
+    }
+
+    .card-timer-value {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--or);
+      line-height: 1;
+    }
+
+    .card-timer-value.warning { color: #e8a040; }
+    .card-timer-value.danger  { color: #c0453a; }
+
     /* INPUT */
     .input-row {
       display: flex;
@@ -444,18 +473,107 @@
       border-color: var(--or);
     }
 
-    /* PROGRESS BAR */
+    /* ─── BARRE DE PROGRESSION COLORÉE ─── */
     .progress-outer {
       width: 100%;
-      height: 3px;
-      background: rgba(201,168,76,0.1);
+      height: 10px;
+      background: rgba(255,255,255,0.05);
       margin-top: 24px;
+      display: flex;
+      overflow: hidden;
+      border-radius: 2px;
     }
 
-    .progress-inner {
+    .progress-inner { display: none; }
+
+    .progress-segment {
       height: 100%;
-      background: linear-gradient(to right, var(--or), var(--or-clair));
-      transition: width 0.5s ease;
+      flex: 1;
+      animation: segPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes segPop {
+      from { transform: scaleX(0); transform-origin: left; }
+      to   { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .progress-segment.correct { background: #4caf7a; }
+    .progress-segment.wrong   { background: #c0453a; }
+    .progress-segment.skip    { background: #4a5568; }
+    .progress-segment.pending { background: rgba(255,255,255,0.06); }
+
+    /* ─── FLAMMES LATÉRALES ─── */
+    .flame-overlay {
+      position: fixed;
+      top: 0;
+      width: 140px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .flame-overlay.active { opacity: 1; }
+    .flame-overlay.left  { left: 0; }
+    .flame-overlay.right { right: 0; }
+
+    .flame {
+      position: absolute;
+      bottom: 0;
+      font-size: 2.8rem;
+      animation: flameDance 0.8s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
+    }
+    .flame-overlay.left  .flame { left: 4px; }
+    .flame-overlay.right .flame { right: 4px; }
+
+    @keyframes flameDance {
+      0%   { transform: scaleX(1)   scaleY(1)   rotate(-3deg); }
+      100% { transform: scaleX(1.1) scaleY(1.08) rotate(3deg); }
+    }
+
+    .flame:nth-child(1)  { bottom:  0%;  animation-delay: 0.00s; font-size: 3.2rem; }
+    .flame:nth-child(2)  { bottom:  8%;  animation-delay: 0.12s; font-size: 2.4rem; }
+    .flame:nth-child(3)  { bottom: 16%;  animation-delay: 0.24s; font-size: 2.8rem; }
+    .flame:nth-child(4)  { bottom: 24%;  animation-delay: 0.07s; font-size: 2.2rem; }
+    .flame:nth-child(5)  { bottom: 32%;  animation-delay: 0.18s; font-size: 3.0rem; }
+    .flame:nth-child(6)  { bottom: 40%;  animation-delay: 0.30s; font-size: 2.5rem; }
+    .flame:nth-child(7)  { bottom: 48%;  animation-delay: 0.05s; font-size: 2.0rem; }
+    .flame:nth-child(8)  { bottom: 56%;  animation-delay: 0.22s; font-size: 2.6rem; }
+    .flame:nth-child(9)  { bottom: 64%;  animation-delay: 0.14s; font-size: 2.2rem; }
+    .flame:nth-child(10) { bottom: 72%;  animation-delay: 0.35s; font-size: 1.8rem; }
+    .flame:nth-child(11) { bottom: 80%;  animation-delay: 0.08s; font-size: 1.5rem; }
+    .flame:nth-child(12) { bottom: 88%;  animation-delay: 0.26s; font-size: 1.2rem; }
+
+    /* ─── FLASH ROUGE ─── */
+    .damage-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 500;
+    }
+    .damage-overlay.hit {
+      animation: damageFlash 0.7s ease forwards;
+    }
+    @keyframes damageFlash {
+      0%   { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+      15%  { box-shadow: inset 0 0 80px 60px rgba(192,40,40,0.65); }
+      40%  { box-shadow: inset 0 0 80px 50px rgba(192,40,40,0.45); }
+      100% { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+    }
+
+    /* ─── TREMBLEMENT ─── */
+    @keyframes screenShake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      10%     { transform: translate(-6px,-3px) rotate(-0.5deg); }
+      25%     { transform: translate(5px,4px) rotate(0.5deg); }
+      40%     { transform: translate(-4px,2px) rotate(-0.3deg); }
+      55%     { transform: translate(4px,-3px) rotate(0.3deg); }
+      70%     { transform: translate(-2px,2px) rotate(-0.2deg); }
+      85%     { transform: translate(2px,-1px) rotate(0.1deg); }
+    }
+    body.shake .page {
+      animation: screenShake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
     }
 
     /* ─── FIN DE QUIZ ─── */
@@ -638,7 +756,6 @@
       <a href="index.html" class="back-link">← Accueil</a>
       <a href="index.html" class="nav-logo">LeQuiz</a>
       <div class="progress-wrap">
-        <span class="timer-display" id="timerDisplay" style="display:none;">00:00</span>
         <span class="progress-text" id="progressText">1 / 101</span>
       </div>
     </nav>
@@ -685,6 +802,10 @@
         <p class="q-year-label">Quel département ?</p>
         <div class="q-year" id="qYear">—</div>
         <p class="q-question">Quel département correspond à ce numéro ?</p>
+        <div class="card-timer" id="timerDisplay" style="display:none;">
+          <span class="card-timer-icon">⏱</span>
+          <span class="card-timer-value" id="timerValue">00:00</span>
+        </div>
         <div class="input-row">
           <input
             type="text"
@@ -724,6 +845,23 @@
     </div>
 
   </div>
+
+  <!-- Flammes série -->
+  <div class="flame-overlay left"  id="flameLeft">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+  <div class="flame-overlay right" id="flameRight">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+
+  <!-- Flash dégât -->
+  <div class="damage-overlay" id="damageOverlay"></div>
 
   <script>
   // ─── DONNÉES ─────────────────────────────────────────────────────────
@@ -870,12 +1008,14 @@
   }
 
   // ─── ÉTAT ──────────────────────────────────────────────────────────
-  let gameMode = null; // 'classic' or '20questions'
+  let gameMode = null;
   let current = 0;
   let scoreCorrect = 0, scoreWrong = 0, scoreSkip = 0;
   let answered = false;
   let timerInterval = null;
   let elapsedSeconds = 0;
+  let streak = 0; // consecutive correct answers
+  let answerHistory = []; // 'correct' | 'wrong' | 'skip' per question
   let leaderboard = JSON.parse(localStorage.getItem('leaderboard20')) || [];
 
   // ─── DOM ──────────────────────────────────────────────────────────
@@ -905,6 +1045,9 @@
   const endMessage  = document.getElementById('endMessage');
   const restartBtn  = document.getElementById('restartBtn');
   const restartBtn20 = document.getElementById('restartBtn20');
+  const flameLeft   = document.getElementById('flameLeft');
+  const flameRight  = document.getElementById('flameRight');
+  const damageOverlay = document.getElementById('damageOverlay');
 
   // ─── TIMER ─────────────────────────────────────────────────────────
   function startTimer() {
@@ -927,13 +1070,73 @@
   function updateTimerDisplay() {
     const mins = Math.floor(elapsedSeconds / 60);
     const secs = elapsedSeconds % 60;
-    timerDisplay.textContent = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const valueEl = document.getElementById('timerValue');
+    if (valueEl) {
+      valueEl.textContent = timeStr;
+      valueEl.className = 'card-timer-value' +
+        (elapsedSeconds >= 90 ? ' danger' : elapsedSeconds >= 60 ? ' warning' : '');
+    }
   }
 
   function formatTime(seconds) {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  // ─── BARRE DE PROGRESSION COLORÉE ─────────────────────────────────
+  function rebuildProgressBar() {
+    const total = QUESTIONS.length;
+    progressOuter.innerHTML = '<div class="progress-inner" id="progressBar" style="display:none"></div>';
+    for (let i = 0; i < total; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'progress-segment ' + (answerHistory[i] || 'pending');
+      // Only animate the last segment
+      if (i < answerHistory.length) seg.style.animationDuration = '0s';
+      progressOuter.appendChild(seg);
+    }
+  }
+
+  function updateLastSegment(type) {
+    const segs = progressOuter.querySelectorAll('.progress-segment');
+    const idx = answerHistory.length - 1;
+    if (segs[idx]) {
+      segs[idx].className = 'progress-segment ' + type;
+      // Re-trigger pop animation
+      segs[idx].style.animation = 'none';
+      void segs[idx].offsetWidth;
+      segs[idx].style.animation = '';
+    }
+  }
+
+  // ─── FLAMMES ───────────────────────────────────────────────────────
+  function updateFlames() {
+    if (streak >= 5) {
+      flameLeft.classList.add('active');
+      flameRight.classList.add('active');
+    } else {
+      flameLeft.classList.remove('active');
+      flameRight.classList.remove('active');
+    }
+  }
+
+  // ─── EFFET DÉGÂT ───────────────────────────────────────────────────
+  function triggerDamage() {
+    damageOverlay.classList.remove('hit');
+    void damageOverlay.offsetWidth;
+    damageOverlay.classList.add('hit');
+    damageOverlay.addEventListener('animationend', () => {
+      damageOverlay.classList.remove('hit');
+    }, { once: true });
+
+    // Shake
+    document.body.classList.remove('shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('shake');
+    document.body.addEventListener('animationend', () => {
+      document.body.classList.remove('shake');
+    }, { once: true });
   }
 
   // ─── MODE SELECTION ─────────────────────────────────────────────────
@@ -963,10 +1166,14 @@
     scoreCorrect = 0;
     scoreWrong = 0;
     scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
     answered = false;
     sCorrect.textContent = '0';
     sWrong.textContent = '0';
     sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
     loadQuestion(0);
   }
 
@@ -985,10 +1192,14 @@
     scoreCorrect = 0;
     scoreWrong = 0;
     scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
     answered = false;
     sCorrect.textContent = '0';
     sWrong.textContent = '0';
     sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
 
     startTimer();
     loadQuestion(0);
@@ -1014,7 +1225,6 @@
     skipBtn.style.display = '';
 
     progressText.textContent = `${idx + 1} / ${QUESTIONS.length}`;
-    progressBar.style.width = `${((idx) / QUESTIONS.length) * 100}%`;
 
     quizStage.style.animation = 'none';
     void quizStage.offsetWidth;
@@ -1041,6 +1251,10 @@
       feedback.className = 'feedback correct show';
       feedback.querySelector('.feedback-icon').textContent = '✦';
       feedbackText.textContent = `Exact ! « ${QUESTIONS[current].answer} »`;
+      streak++;
+      answerHistory.push('correct');
+      updateLastSegment('correct');
+      updateFlames();
       burstStars();
     } else {
       scoreWrong++;
@@ -1049,6 +1263,12 @@
       feedback.className = 'feedback wrong show';
       feedback.querySelector('.feedback-icon').textContent = '✗';
       feedbackText.textContent = `La bonne réponse était : « ${QUESTIONS[current].answer} »`;
+      const hadStreak = streak >= 5;
+      streak = 0;
+      answerHistory.push('wrong');
+      updateLastSegment('wrong');
+      updateFlames();
+      if (hadStreak) triggerDamage();
     }
 
     nextBtn.style.display = '';
@@ -1066,6 +1286,12 @@
     feedback.className = 'feedback skip show';
     feedback.querySelector('.feedback-icon').textContent = '○';
     feedbackText.textContent = `La réponse était : « ${QUESTIONS[current].answer} »`;
+    const hadStreak = streak >= 5;
+    streak = 0;
+    answerHistory.push('skip');
+    updateLastSegment('skip');
+    updateFlames();
+    if (hadStreak) triggerDamage();
     nextBtn.style.display = '';
   }
 
@@ -1151,6 +1377,8 @@
     scoreCorrect = 0;
     scoreWrong = 0;
     scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
     answered = false;
     stopTimer();
     sCorrect.textContent = '0';
@@ -1161,6 +1389,10 @@
     quizStage.style.display = '';
     progressOuter.style.display = 'none';
     timerDisplay.style.display = 'none';
+    const timerVal = document.getElementById('timerValue');
+    if (timerVal) { timerVal.textContent = '00:00'; timerVal.className = 'card-timer-value'; }
+    flameLeft.classList.remove('active');
+    flameRight.classList.remove('active');
     modeSelector.style.display = 'block';
     quizHeader.classList.remove('show');
 
@@ -1195,11 +1427,21 @@
   restartBtn.addEventListener('click', restart);
   restartBtn20.addEventListener('click', restart);
 
-  answerInput.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!answered) submit();
-      else next();
+      // Don't interfere if a modal/prompt is open
+      if (!quizStage.classList.contains('show')) return;
+      if (!answered) {
+        submit();
+      } else {
+        next();
+      }
     }
+  });
+
+  answerInput.addEventListener('keydown', (e) => {
+    // Prevent default form-submit behavior on Enter inside input
+    if (e.key === 'Enter') e.preventDefault();
   });
 
   </script>
