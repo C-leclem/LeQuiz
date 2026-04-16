@@ -734,6 +734,104 @@
       .mode-buttons { gap: 10px; }
       .leaderboard-row { grid-template-columns: 40px 1fr 80px 100px; font-size: 0.9rem; }
     }
+
+    /* ─── MODE ENTRAÎNEMENT ─── */
+    .training-screen {
+      display: none;
+      width: 100%;
+      max-width: 680px;
+      padding: 0 20px 60px;
+      animation: fadeIn 0.5s ease both;
+    }
+    .training-screen.show { display: block; }
+
+    .training-header {
+      text-align: center;
+      padding: 50px 0 20px;
+    }
+
+    .training-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: rgba(247,240,224,0.45);
+      margin-top: 10px;
+    }
+
+    .training-controls {
+      margin: 24px 0 20px;
+    }
+
+    .training-search {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(201,168,76,0.35);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      border-radius: 2px;
+    }
+    .training-search::placeholder { color: rgba(247,240,224,0.25); font-style: italic; }
+    .training-search:focus { border-color: var(--or); }
+
+    .training-table-wrap {
+      background: var(--noir-clair);
+      border: 1px solid rgba(201,168,76,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .training-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .training-table thead tr {
+      background: rgba(201,168,76,0.08);
+    }
+
+    .training-table th {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--or);
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(201,168,76,0.2);
+    }
+
+    .training-table td {
+      padding: 13px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+    }
+
+    .training-table tr:last-child td { border-bottom: none; }
+    .training-table tr:hover td { background: rgba(201,168,76,0.05); }
+
+    .training-num {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.1rem;
+      color: var(--or);
+      width: 80px;
+    }
+
+    .training-name { color: var(--creme); }
+
+    .training-empty {
+      text-align: center;
+      color: rgba(247,240,224,0.3);
+      font-style: italic;
+      padding: 30px !important;
+    }
   </style>
 </head>
 <body>
@@ -758,7 +856,29 @@
       <div class="mode-buttons">
         <button class="mode-btn" id="modeClassic">Mode Classique</button>
         <button class="mode-btn" id="mode20">Mode 20 Questions</button>
+        <button class="mode-btn" id="modeTraining">📖 Mode Entraînement</button>
       </div>
+    </div>
+
+    <!-- Mode Entraînement -->
+    <div class="training-screen" id="trainingScreen">
+      <div class="training-header">
+        <p class="quiz-category">✦ Cinéma ✦</p>
+        <h1 class="quiz-title">Oscars du Meilleur Film</h1>
+        <p class="training-subtitle">Consultez la liste complète pour vous entraîner</p>
+      </div>
+      <div class="training-controls">
+        <input type="text" class="training-search" id="trainingSearch" placeholder="Rechercher une année ou un film…" autocomplete="off" />
+      </div>
+      <div class="training-table-wrap">
+        <table class="training-table" id="trainingTable">
+          <thead>
+            <tr><th>Année</th><th>Film</th></tr>
+          </thead>
+          <tbody id="trainingBody"></tbody>
+        </table>
+      </div>
+      <button class="restart-btn" id="trainingBack" style="margin:30px auto;display:block;">← Retour au menu</button>
     </div>
 
     <!-- En-tête quiz -->
@@ -1371,6 +1491,43 @@
 
   answerInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') e.preventDefault();
+  });
+
+  // ─── MODE ENTRAÎNEMENT ─────────────────────────────────────────────────
+  const trainingScreen  = document.getElementById('trainingScreen');
+  const trainingBody    = document.getElementById('trainingBody');
+  const trainingSearch  = document.getElementById('trainingSearch');
+  const trainingBack    = document.getElementById('trainingBack');
+
+  const ORIGINAL_QUESTIONS = [...ALL_QUESTIONS];
+
+  function renderTraining(filter) {
+    const q = filter ? filter.toLowerCase() : '';
+    const rows = ORIGINAL_QUESTIONS.filter(item =>
+      item.year.toString().toLowerCase().includes(q) || item.answer.toLowerCase().includes(q)
+    );
+    if (rows.length === 0) {
+      trainingBody.innerHTML = '<tr><td colspan="2" class="training-empty">Aucun résultat</td></tr>';
+      return;
+    }
+    trainingBody.innerHTML = rows.map(item =>
+      `<tr><td class="training-num">${item.year}</td><td class="training-name">${item.answer}</td></tr>`
+    ).join('');
+  }
+
+  document.getElementById('modeTraining').addEventListener('click', () => {
+    modeSelector.style.display = 'none';
+    trainingScreen.classList.add('show');
+    renderTraining('');
+    trainingSearch.focus();
+  });
+
+  trainingSearch.addEventListener('input', () => renderTraining(trainingSearch.value));
+
+  trainingBack.addEventListener('click', () => {
+    trainingScreen.classList.remove('show');
+    trainingSearch.value = '';
+    modeSelector.style.display = '';
   });
 
   </script>
