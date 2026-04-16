@@ -4,7 +4,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Oscars du Meilleur Film — LeQuiz</title>
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Oswald:wght@200;300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Oswald:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
@@ -33,7 +33,7 @@
       content: '';
       position: fixed;
       inset: 0;
-      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' result='noise'/%3C/filter%3E%3Crect width='256' height='256' fill='%230a0804' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
       pointer-events: none;
       z-index: 9999;
       opacity: 0.4;
@@ -59,8 +59,8 @@
       z-index: 1;
       pointer-events: none;
     }
-    .curtain-left { left: 0; background: linear-gradient(to right, rgba(100,20,20,0.45) 0%, transparent 100%); }
-    .curtain-right { right: 0; background: linear-gradient(to left, rgba(100,20,20,0.45) 0%, transparent 100%); }
+    .curtain-left  { left: 0;  background: linear-gradient(to right, rgba(100,20,20,0.45) 0%, transparent 100%); }
+    .curtain-right { right: 0; background: linear-gradient(to left,  rgba(100,20,20,0.45) 0%, transparent 100%); }
 
     /* ─── PAGE LAYOUT ─── */
     .page {
@@ -121,12 +121,62 @@
       text-align: right;
     }
 
+    /* ─── MODE SELECTOR ─── */
+    .mode-selector {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .mode-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--or-pale);
+      margin-bottom: 40px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    .mode-btn {
+      background: linear-gradient(135deg, rgba(201,168,76,0.15) 0%, rgba(201,168,76,0.04) 100%);
+      border: 2px solid rgba(201,168,76,0.4);
+      color: var(--or-pale);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 18px 32px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .mode-btn:hover {
+      background: linear-gradient(135deg, rgba(201,168,76,0.3) 0%, rgba(201,168,76,0.12) 100%);
+      border-color: var(--or);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(201,168,76,0.12);
+    }
+
     /* ─── QUIZ HEADER ─── */
     .quiz-header {
       text-align: center;
       padding: 50px 20px 0;
       animation: fadeDown 0.8s ease both;
+      display: none;
     }
+
+    .quiz-header.show { display: block; }
 
     @keyframes fadeDown {
       from { opacity: 0; transform: translateY(-20px); }
@@ -160,9 +210,7 @@
       padding-bottom: 30px;
     }
 
-    .score-item {
-      text-align: center;
-    }
+    .score-item { text-align: center; }
 
     .score-val {
       font-family: 'Playfair Display', serif;
@@ -173,7 +221,7 @@
     }
 
     .score-val.wrong { color: #c0453a; }
-    .score-val.skip { color: var(--gris); }
+    .score-val.skip  { color: var(--gris); }
 
     .score-label {
       font-family: 'Oswald', sans-serif;
@@ -196,7 +244,10 @@
       max-width: 620px;
       padding: 0 20px;
       animation: fadeIn 0.5s ease both;
+      display: none;
     }
+
+    .quiz-stage.show { display: block; }
 
     @keyframes fadeIn {
       from { opacity: 0; }
@@ -247,6 +298,32 @@
       margin-bottom: 30px;
     }
 
+    /* CARD TIMER */
+    .card-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(201,168,76,0.1);
+      border-bottom: 1px solid rgba(201,168,76,0.1);
+    }
+
+    .card-timer-icon { font-size: 1.4rem; opacity: 0.7; }
+
+    .card-timer-value {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--or);
+      line-height: 1;
+    }
+
+    .card-timer-value.warning { color: #e8a040; }
+    .card-timer-value.danger  { color: #c0453a; }
+
     /* INPUT */
     .input-row {
       display: flex;
@@ -268,10 +345,7 @@
       width: 100%;
     }
 
-    .answer-input::placeholder {
-      color: rgba(247,240,224,0.2);
-      font-style: italic;
-    }
+    .answer-input::placeholder { color: rgba(247,240,224,0.2); font-style: italic; }
 
     .answer-input:focus {
       border-color: rgba(201,168,76,0.6);
@@ -305,7 +379,7 @@
       white-space: nowrap;
     }
 
-    .submit-btn:hover { background: var(--or-clair); transform: translateY(-1px); }
+    .submit-btn:hover  { background: var(--or-clair); transform: translateY(-1px); }
     .submit-btn:active { transform: translateY(0); }
     .submit-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
 
@@ -391,18 +465,107 @@
       border-color: var(--or);
     }
 
-    /* PROGRESS BAR */
+    /* ─── BARRE DE PROGRESSION COLORÉE ─── */
     .progress-outer {
       width: 100%;
-      height: 3px;
-      background: rgba(201,168,76,0.1);
+      height: 10px;
+      background: rgba(255,255,255,0.05);
       margin-top: 24px;
+      display: flex;
+      overflow: hidden;
+      border-radius: 2px;
     }
 
-    .progress-inner {
+    .progress-inner { display: none; }
+
+    .progress-segment {
       height: 100%;
-      background: linear-gradient(to right, var(--or), var(--or-clair));
-      transition: width 0.5s ease;
+      flex: 1;
+      animation: segPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes segPop {
+      from { transform: scaleX(0); transform-origin: left; }
+      to   { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .progress-segment.correct { background: #4caf7a; }
+    .progress-segment.wrong   { background: #c0453a; }
+    .progress-segment.skip    { background: #4a5568; }
+    .progress-segment.pending { background: rgba(255,255,255,0.06); }
+
+    /* ─── FLAMMES LATÉRALES ─── */
+    .flame-overlay {
+      position: fixed;
+      top: 0;
+      width: 140px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .flame-overlay.active { opacity: 1; }
+    .flame-overlay.left  { left: 0; }
+    .flame-overlay.right { right: 0; }
+
+    .flame {
+      position: absolute;
+      bottom: 0;
+      font-size: 2.8rem;
+      animation: flameDance 0.8s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
+    }
+    .flame-overlay.left  .flame { left: 4px; }
+    .flame-overlay.right .flame { right: 4px; }
+
+    @keyframes flameDance {
+      0%   { transform: scaleX(1)   scaleY(1)   rotate(-3deg); }
+      100% { transform: scaleX(1.1) scaleY(1.08) rotate(3deg); }
+    }
+
+    .flame:nth-child(1)  { bottom:  0%;  animation-delay: 0.00s; font-size: 3.2rem; }
+    .flame:nth-child(2)  { bottom:  8%;  animation-delay: 0.12s; font-size: 2.4rem; }
+    .flame:nth-child(3)  { bottom: 16%;  animation-delay: 0.24s; font-size: 2.8rem; }
+    .flame:nth-child(4)  { bottom: 24%;  animation-delay: 0.07s; font-size: 2.2rem; }
+    .flame:nth-child(5)  { bottom: 32%;  animation-delay: 0.18s; font-size: 3.0rem; }
+    .flame:nth-child(6)  { bottom: 40%;  animation-delay: 0.30s; font-size: 2.5rem; }
+    .flame:nth-child(7)  { bottom: 48%;  animation-delay: 0.05s; font-size: 2.0rem; }
+    .flame:nth-child(8)  { bottom: 56%;  animation-delay: 0.22s; font-size: 2.6rem; }
+    .flame:nth-child(9)  { bottom: 64%;  animation-delay: 0.14s; font-size: 2.2rem; }
+    .flame:nth-child(10) { bottom: 72%;  animation-delay: 0.35s; font-size: 1.8rem; }
+    .flame:nth-child(11) { bottom: 80%;  animation-delay: 0.08s; font-size: 1.5rem; }
+    .flame:nth-child(12) { bottom: 88%;  animation-delay: 0.26s; font-size: 1.2rem; }
+
+    /* ─── FLASH ROUGE ─── */
+    .damage-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 500;
+    }
+    .damage-overlay.hit {
+      animation: damageFlash 0.7s ease forwards;
+    }
+    @keyframes damageFlash {
+      0%   { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+      15%  { box-shadow: inset 0 0 80px 60px rgba(192,40,40,0.65); }
+      40%  { box-shadow: inset 0 0 80px 50px rgba(192,40,40,0.45); }
+      100% { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+    }
+
+    /* ─── TREMBLEMENT ─── */
+    @keyframes screenShake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      10%     { transform: translate(-6px,-3px) rotate(-0.5deg); }
+      25%     { transform: translate(5px,4px) rotate(0.5deg); }
+      40%     { transform: translate(-4px,2px) rotate(-0.3deg); }
+      55%     { transform: translate(4px,-3px) rotate(0.3deg); }
+      70%     { transform: translate(-2px,2px) rotate(-0.2deg); }
+      85%     { transform: translate(2px,-1px) rotate(0.1deg); }
+    }
+    body.shake .page {
+      animation: screenShake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
     }
 
     /* ─── FIN DE QUIZ ─── */
@@ -455,6 +618,82 @@
       margin: 0 auto 44px;
     }
 
+    /* ─── LEADERBOARD ─── */
+    .leaderboard-container {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      display: none;
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+
+    .leaderboard-container.show { display: block; }
+
+    .leaderboard-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--or-pale);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      background: var(--noir-clair);
+      border: 1px solid rgba(201,168,76,0.2);
+      overflow: hidden;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 100px 120px;
+      border-bottom: 1px solid rgba(201,168,76,0.15);
+      padding: 16px 20px;
+      align-items: center;
+    }
+
+    .leaderboard-row:last-child { border-bottom: none; }
+
+    .leaderboard-row.header {
+      background: rgba(201,168,76,0.08);
+      font-weight: 600;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--or);
+    }
+
+    .leaderboard-rank {
+      font-weight: 700;
+      color: var(--or);
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .leaderboard-name {
+      color: var(--creme);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .leaderboard-score {
+      text-align: center;
+      color: #a8f0c0;
+      font-weight: 600;
+    }
+
+    .leaderboard-time {
+      text-align: right;
+      color: var(--or-clair);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+    }
+
     .restart-btn {
       background: var(--or);
       color: var(--noir);
@@ -467,6 +706,8 @@
       padding: 16px 40px;
       cursor: pointer;
       transition: background 0.3s ease;
+      display: inline-block;
+      margin-top: 20px;
     }
     .restart-btn:hover { background: var(--or-clair); }
 
@@ -490,6 +731,8 @@
       .input-row { flex-direction: column; }
       .submit-btn { width: 100%; }
       .score-bar { gap: 16px; }
+      .mode-buttons { gap: 10px; }
+      .leaderboard-row { grid-template-columns: 40px 1fr 80px 100px; font-size: 0.9rem; }
     }
   </style>
 </head>
@@ -505,12 +748,21 @@
       <a href="index.html" class="back-link">← Accueil</a>
       <a href="index.html" class="nav-logo">CineQuiz</a>
       <div class="progress-wrap">
-        <span class="progress-text" id="progressText">1 / 98</span>
+        <span class="progress-text" id="progressText">—</span>
       </div>
     </nav>
 
+    <!-- Mode Selector -->
+    <div class="mode-selector" id="modeSelector">
+      <h1 class="mode-title">Choisissez votre mode</h1>
+      <div class="mode-buttons">
+        <button class="mode-btn" id="modeClassic">Mode Classique</button>
+        <button class="mode-btn" id="mode20">Mode 20 Questions</button>
+      </div>
+    </div>
+
     <!-- En-tête quiz -->
-    <div class="quiz-header">
+    <div class="quiz-header" id="quizHeader">
       <p class="quiz-category">✦ Cinéma ✦</p>
       <h1 class="quiz-title">Oscars du Meilleur Film</h1>
       <div class="score-bar">
@@ -532,8 +784,8 @@
     </div>
 
     <!-- Barre de progression -->
-    <div class="progress-outer" style="max-width:620px;width:calc(100% - 40px);">
-      <div class="progress-inner" id="progressBar" style="width:1%"></div>
+    <div class="progress-outer" id="progressOuter" style="max-width:620px;width:calc(100% - 40px);display:none;">
+      <div class="progress-inner" id="progressBar" style="display:none;"></div>
     </div>
 
     <!-- Scène du quiz -->
@@ -542,6 +794,10 @@
         <p class="q-year-label">Quelle année ?</p>
         <div class="q-year" id="qYear">—</div>
         <p class="q-question">Quel film a remporté l'Oscar du Meilleur Film cette année‑là ?</p>
+        <div class="card-timer" id="timerDisplay" style="display:none;">
+          <span class="card-timer-icon">⏱</span>
+          <span class="card-timer-value" id="timerValue">00:00</span>
+        </div>
         <div class="input-row">
           <input
             type="text"
@@ -564,7 +820,7 @@
       </div>
     </div>
 
-    <!-- Écran de fin -->
+    <!-- Écran de fin (mode classique) -->
     <div class="end-screen" id="endScreen">
       <span class="trophy-big">🏆</span>
       <h2 class="end-title">Bravo !</h2>
@@ -573,14 +829,38 @@
       <button class="restart-btn" id="restartBtn">Rejouer depuis le début</button>
     </div>
 
+    <!-- Leaderboard Mode 20 Questions -->
+    <div class="leaderboard-container" id="leaderboardContainer">
+      <h2 class="leaderboard-title">Classement</h2>
+      <div class="leaderboard-table" id="leaderboardTable"></div>
+      <button class="restart-btn" id="restartBtn20">Rejouer depuis le début</button>
+    </div>
+
   </div>
+
+  <!-- Flammes série -->
+  <div class="flame-overlay left" id="flameLeft">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+  <div class="flame-overlay right" id="flameRight">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+
+  <!-- Flash dégât -->
+  <div class="damage-overlay" id="damageOverlay"></div>
 
   <script>
   // ─── DONNÉES ───────────────────────────────────────────────────────────
-  const QUESTIONS = [
+  const ALL_QUESTIONS = [
     { year: "1929", answer: "Les Ailes" },
     { year: "1930 (avril)", answer: "Broadway Melody" },
-    { year: "1930 (novembre)", answer: "À l'ouest rien de nouveau" },
+    { year: "1930 (nov.)", answer: "À l'ouest rien de nouveau" },
     { year: "1931", answer: "La Ruée vers l'Ouest" },
     { year: "1932", answer: "Grand Hotel" },
     { year: "1934", answer: "Cavalcade" },
@@ -677,11 +957,12 @@
     { year: "2026", answer: "Une bataille après l'autre" },
   ];
 
+  let QUESTIONS = [];
+
   // ─── NORMALISATION ─────────────────────────────────────────────────────
-  // Supprime accents, ponctuation, espaces superflus, met en minuscules
   function normalize(str) {
     return str
-      .normalize('NFD').replace(/[\u0300-\u036f]/g, '') // accents
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
       .toLowerCase()
       .replace(/['']/g, "'")
       .replace(/[^a-z0-9 ']/g, ' ')
@@ -689,15 +970,12 @@
       .trim();
   }
 
-  // Vérifie si la réponse est acceptable (correspondance exacte ou partielle tolérée)
   function checkAnswer(input, expected) {
     const n = normalize(input);
     const e = normalize(expected);
     if (n === e) return true;
-    // Tolérance : si l'input est contenu dans la réponse et vice versa à > 85%
     if (e.includes(n) && n.length >= Math.floor(e.length * 0.75)) return true;
     if (n.includes(e)) return true;
-    // Similarité de Jaro-Winkler simplifiée via levenshtein
     if (levenshtein(n, e) <= Math.floor(e.length * 0.15)) return true;
     return false;
   }
@@ -711,40 +989,173 @@
     return dp[m][n];
   }
 
-// ─── RANDOMIZATION ─────────────────────────────────────────────────────
-function shuffleArray(array) {
-  for (let i = array.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [array[i], array[j]] = [array[j], array[i]];
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
   }
-}
 
-// Shuffle questions on start
-shuffleArray(QUESTIONS);
-    
-  // ─── ÉTAT ──────────────────────────────────────────────────────────────
+  // ─── ÉTAT ──────────────────────────────────────────────────────────
+  let gameMode = null;
   let current = 0;
   let scoreCorrect = 0, scoreWrong = 0, scoreSkip = 0;
   let answered = false;
+  let timerInterval = null;
+  let elapsedSeconds = 0;
+  let streak = 0;
+  let answerHistory = [];
+  let leaderboard = JSON.parse(localStorage.getItem('oscars_leaderboard20')) || [];
 
-  // ─── DOM ───────────────────────────────────────────────────────────────
-  const qYear       = document.getElementById('qYear');
-  const answerInput = document.getElementById('answerInput');
-  const submitBtn   = document.getElementById('submitBtn');
-  const skipBtn     = document.getElementById('skipBtn');
-  const nextBtn     = document.getElementById('nextBtn');
-  const feedback    = document.getElementById('feedback');
-  const feedbackText= document.getElementById('feedbackText');
-  const progressText= document.getElementById('progressText');
-  const progressBar = document.getElementById('progressBar');
-  const sCorrect    = document.getElementById('scoreCorrect');
-  const sWrong      = document.getElementById('scoreWrong');
-  const sSkip       = document.getElementById('scoreSkip');
-  const quizStage   = document.getElementById('quizStage');
-  const endScreen   = document.getElementById('endScreen');
-  const finalScore  = document.getElementById('finalScore');
-  const endMessage  = document.getElementById('endMessage');
-  const restartBtn  = document.getElementById('restartBtn');
+  // ─── DOM ──────────────────────────────────────────────────────────
+  const modeSelector    = document.getElementById('modeSelector');
+  const modeClassicBtn  = document.getElementById('modeClassic');
+  const mode20Btn       = document.getElementById('mode20');
+  const qYear           = document.getElementById('qYear');
+  const answerInput     = document.getElementById('answerInput');
+  const submitBtn       = document.getElementById('submitBtn');
+  const skipBtn         = document.getElementById('skipBtn');
+  const nextBtn         = document.getElementById('nextBtn');
+  const feedback        = document.getElementById('feedback');
+  const feedbackText    = document.getElementById('feedbackText');
+  const progressText    = document.getElementById('progressText');
+  const progressOuter   = document.getElementById('progressOuter');
+  const timerDisplay    = document.getElementById('timerDisplay');
+  const sCorrect        = document.getElementById('scoreCorrect');
+  const sWrong          = document.getElementById('scoreWrong');
+  const sSkip           = document.getElementById('scoreSkip');
+  const quizStage       = document.getElementById('quizStage');
+  const quizHeader      = document.getElementById('quizHeader');
+  const endScreen       = document.getElementById('endScreen');
+  const leaderboardContainer = document.getElementById('leaderboardContainer');
+  const leaderboardTable     = document.getElementById('leaderboardTable');
+  const finalScore      = document.getElementById('finalScore');
+  const endMessage      = document.getElementById('endMessage');
+  const restartBtn      = document.getElementById('restartBtn');
+  const restartBtn20    = document.getElementById('restartBtn20');
+  const flameLeft       = document.getElementById('flameLeft');
+  const flameRight      = document.getElementById('flameRight');
+  const damageOverlay   = document.getElementById('damageOverlay');
+
+  // ─── TIMER ─────────────────────────────────────────────────────────
+  function startTimer() {
+    elapsedSeconds = 0;
+    timerDisplay.style.display = '';
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      elapsedSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) { clearInterval(timerInterval); timerInterval = null; }
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = elapsedSeconds % 60;
+    const timeStr = `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+    const valueEl = document.getElementById('timerValue');
+    if (valueEl) {
+      valueEl.textContent = timeStr;
+      valueEl.className = 'card-timer-value' +
+        (elapsedSeconds >= 90 ? ' danger' : elapsedSeconds >= 60 ? ' warning' : '');
+    }
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2,'0')}:${String(secs).padStart(2,'0')}`;
+  }
+
+  // ─── BARRE DE PROGRESSION COLORÉE ─────────────────────────────────
+  function rebuildProgressBar() {
+    const total = QUESTIONS.length;
+    progressOuter.innerHTML = '<div class="progress-inner" id="progressBar" style="display:none"></div>';
+    for (let i = 0; i < total; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'progress-segment ' + (answerHistory[i] || 'pending');
+      if (i < answerHistory.length) seg.style.animationDuration = '0s';
+      progressOuter.appendChild(seg);
+    }
+  }
+
+  function updateLastSegment(type) {
+    const segs = progressOuter.querySelectorAll('.progress-segment');
+    const idx = answerHistory.length - 1;
+    if (segs[idx]) {
+      segs[idx].className = 'progress-segment ' + type;
+      segs[idx].style.animation = 'none';
+      void segs[idx].offsetWidth;
+      segs[idx].style.animation = '';
+    }
+  }
+
+  // ─── FLAMMES ───────────────────────────────────────────────────────
+  function updateFlames() {
+    if (streak >= 5) {
+      flameLeft.classList.add('active');
+      flameRight.classList.add('active');
+    } else {
+      flameLeft.classList.remove('active');
+      flameRight.classList.remove('active');
+    }
+  }
+
+  // ─── EFFET DÉGÂT ───────────────────────────────────────────────────
+  function triggerDamage() {
+    damageOverlay.classList.remove('hit');
+    void damageOverlay.offsetWidth;
+    damageOverlay.classList.add('hit');
+    damageOverlay.addEventListener('animationend', () => damageOverlay.classList.remove('hit'), { once: true });
+    document.body.classList.remove('shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('shake');
+    document.body.addEventListener('animationend', () => document.body.classList.remove('shake'), { once: true });
+  }
+
+  // ─── MODE SELECTION ─────────────────────────────────────────────────
+  modeClassicBtn.addEventListener('click', () => { gameMode = 'classic';      initClassicMode(); });
+  mode20Btn.addEventListener('click',      () => { gameMode = '20questions';  init20QuestionsMode(); });
+
+  function initClassicMode() {
+    modeSelector.style.display = 'none';
+    quizHeader.classList.add('show');
+    progressOuter.style.display = '';
+    quizStage.classList.add('show');
+    timerDisplay.style.display = 'none';
+
+    QUESTIONS = [...ALL_QUESTIONS];
+    shuffleArray(QUESTIONS);
+
+    current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
+    streak = 0; answerHistory = []; answered = false;
+    sCorrect.textContent = '0'; sWrong.textContent = '0'; sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
+    loadQuestion(0);
+  }
+
+  function init20QuestionsMode() {
+    modeSelector.style.display = 'none';
+    quizHeader.classList.add('show');
+    progressOuter.style.display = '';
+    quizStage.classList.add('show');
+
+    QUESTIONS = [...ALL_QUESTIONS];
+    shuffleArray(QUESTIONS);
+    QUESTIONS = QUESTIONS.slice(0, 20);
+
+    current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
+    streak = 0; answerHistory = []; answered = false;
+    sCorrect.textContent = '0'; sWrong.textContent = '0'; sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
+    startTimer();
+    loadQuestion(0);
+  }
 
   // ─── CHARGEMENT D'UNE QUESTION ─────────────────────────────────────────
   function loadQuestion(idx) {
@@ -766,9 +1177,7 @@ shuffleArray(QUESTIONS);
     skipBtn.style.display = '';
 
     progressText.textContent = `${idx + 1} / ${QUESTIONS.length}`;
-    progressBar.style.width = `${((idx) / QUESTIONS.length) * 100}%`;
 
-    // Fade in
     quizStage.style.animation = 'none';
     void quizStage.offsetWidth;
     quizStage.style.animation = 'fadeIn 0.4s ease both';
@@ -794,6 +1203,10 @@ shuffleArray(QUESTIONS);
       feedback.className = 'feedback correct show';
       feedback.querySelector('.feedback-icon').textContent = '✦';
       feedbackText.textContent = `Exact ! « ${QUESTIONS[current].answer} »`;
+      streak++;
+      answerHistory.push('correct');
+      updateLastSegment('correct');
+      updateFlames();
       burstStars();
     } else {
       scoreWrong++;
@@ -802,12 +1215,18 @@ shuffleArray(QUESTIONS);
       feedback.className = 'feedback wrong show';
       feedback.querySelector('.feedback-icon').textContent = '✗';
       feedbackText.textContent = `La bonne réponse était : « ${QUESTIONS[current].answer} »`;
+      const hadStreak = streak >= 5;
+      streak = 0;
+      answerHistory.push('wrong');
+      updateLastSegment('wrong');
+      updateFlames();
+      if (hadStreak) triggerDamage();
     }
 
     nextBtn.style.display = '';
   }
 
-  // ─── PASSER ────────────────────────────────────────────────────────────
+  // ─── PASSER ─────────────────────────────────────────────────────────
   function skip() {
     if (answered) return;
     answered = true;
@@ -819,10 +1238,16 @@ shuffleArray(QUESTIONS);
     feedback.className = 'feedback skip show';
     feedback.querySelector('.feedback-icon').textContent = '○';
     feedbackText.textContent = `La réponse était : « ${QUESTIONS[current].answer} »`;
+    const hadStreak = streak >= 5;
+    streak = 0;
+    answerHistory.push('skip');
+    updateLastSegment('skip');
+    updateFlames();
+    if (hadStreak) triggerDamage();
     nextBtn.style.display = '';
   }
 
-  // ─── SUIVANT ───────────────────────────────────────────────────────────
+  // ─── SUIVANT ─────────────────────────────────────────────────────────
   function next() {
     current++;
     if (current >= QUESTIONS.length) {
@@ -832,31 +1257,79 @@ shuffleArray(QUESTIONS);
     }
   }
 
-  // ─── FIN ───────────────────────────────────────────────────────────────
+  // ─── FIN ──────────────────────────────────────────────────────────
   function showEnd() {
+    stopTimer();
     quizStage.style.display = 'none';
-    endScreen.classList.add('show');
-    progressBar.style.width = '100%';
-    progressText.textContent = `Terminé !`;
-    const pct = Math.round((scoreCorrect / QUESTIONS.length) * 100);
-    finalScore.textContent = `${scoreCorrect} / ${QUESTIONS.length} (${pct}%)`;
-    const msg =
-      pct >= 90 ? "Performance de légende. Vous êtes digne des plus grandes salles." :
-      pct >= 70 ? "Excellent ! Votre culture cinématographique est bien rodée." :
-      pct >= 50 ? "Bonne prestation. Encore quelques films à rattraper…" :
-      pct >= 30 ? "Il reste du chemin — mais le cinéma vous attend." :
-                  "Le septième art vous réserve encore bien des découvertes.";
-    endMessage.textContent = msg;
+    progressOuter.style.display = 'none';
+
+    if (gameMode === 'classic') {
+      endScreen.classList.add('show');
+      progressText.textContent = 'Terminé !';
+      const pct = Math.round((scoreCorrect / QUESTIONS.length) * 100);
+      finalScore.textContent = `${scoreCorrect} / ${QUESTIONS.length} (${pct}%)`;
+      const msg =
+        pct >= 90 ? "Performance de légende. Vous êtes digne des plus grandes salles." :
+        pct >= 70 ? "Excellent ! Votre culture cinématographique est bien rodée." :
+        pct >= 50 ? "Bonne prestation. Encore quelques films à rattraper…" :
+        pct >= 30 ? "Il reste du chemin — mais le cinéma vous attend." :
+                    "Le septième art vous réserve encore bien des découvertes.";
+      endMessage.textContent = msg;
+    } else {
+      showLeaderboard();
+    }
+  }
+
+  function showLeaderboard() {
+    endScreen.style.display = 'none';
+    leaderboardContainer.classList.add('show');
+
+    const name = prompt('Entrez votre nom (ou pseudo) :') || 'Anonyme';
+    const newEntry = { name, score: scoreCorrect, time: elapsedSeconds, total: 20 };
+
+    leaderboard.push(newEntry);
+    leaderboard.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
+    localStorage.setItem('oscars_leaderboard20', JSON.stringify(leaderboard));
+
+    renderLeaderboard();
+  }
+
+  function renderLeaderboard() {
+    let html = '<div class="leaderboard-row header">';
+    html += '<div>Rang</div><div>Nom</div><div>Score</div><div>Temps</div>';
+    html += '</div>';
+
+    leaderboard.forEach((entry, idx) => {
+      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
+      html += '<div class="leaderboard-row">';
+      html += `<div class="leaderboard-rank">${medal}</div>`;
+      html += `<div class="leaderboard-name">${entry.name}</div>`;
+      html += `<div class="leaderboard-score">${entry.score}/20</div>`;
+      html += `<div class="leaderboard-time">${formatTime(entry.time)}</div>`;
+      html += '</div>';
+    });
+
+    leaderboardTable.innerHTML = html;
   }
 
   function restart() {
     current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
-    sCorrect.textContent = '0';
-    sWrong.textContent = '0';
-    sSkip.textContent = '0';
+    streak = 0; answerHistory = []; answered = false;
+    stopTimer();
+    sCorrect.textContent = '0'; sWrong.textContent = '0'; sSkip.textContent = '0';
     endScreen.classList.remove('show');
+    leaderboardContainer.classList.remove('show');
     quizStage.style.display = '';
-    loadQuestion(0);
+    progressOuter.style.display = 'none';
+    timerDisplay.style.display = 'none';
+    const timerVal = document.getElementById('timerValue');
+    if (timerVal) { timerVal.textContent = '00:00'; timerVal.className = 'card-timer-value'; }
+    flameLeft.classList.remove('active');
+    flameRight.classList.remove('active');
+    modeSelector.style.display = 'block';
+    quizHeader.classList.remove('show');
+    quizStage.classList.remove('show');
+    progressText.textContent = '—';
   }
 
   // ─── ÉTOILES CONFETTI ──────────────────────────────────────────────────
@@ -878,21 +1351,28 @@ shuffleArray(QUESTIONS);
     }
   }
 
-  // ─── ÉVÉNEMENTS ────────────────────────────────────────────────────────
+  // ─── ÉVÉNEMENTS ───────────────────────────────────────────────────────
   submitBtn.addEventListener('click', submit);
   skipBtn.addEventListener('click', skip);
   nextBtn.addEventListener('click', next);
   restartBtn.addEventListener('click', restart);
+  restartBtn20.addEventListener('click', restart);
 
-  answerInput.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') {
-      if (!answered) submit();
-      else next();
+      if (!quizStage.classList.contains('show')) return;
+      if (!answered) {
+        submit();
+      } else {
+        next();
+      }
     }
   });
 
-  // ─── INIT ──────────────────────────────────────────────────────────────
-  loadQuestion(0);
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.preventDefault();
+  });
+
   </script>
 
 </body>
