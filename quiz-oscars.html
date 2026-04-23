@@ -847,6 +847,7 @@
       <a href="index.html" class="nav-logo">LeQuiz</a>
       <div class="progress-wrap">
         <span class="progress-text" id="progressText">—</span>
+        <span id="userBadgeSlot"></span>
       </div>
     </nav>
 
@@ -975,7 +976,13 @@
   <!-- Flash dégât -->
   <div class="damage-overlay" id="damageOverlay"></div>
 
-  <script>
+  <script type="module">
+  import {
+    supabase, showAuthModal, getCurrentUser, signOut,
+    submitScore, fetchLeaderboard
+  } from './lequiz-auth.js';
+
+  const QUIZ_ID = 'oscars';
   // ─── DONNÉES ───────────────────────────────────────────────────────────
   const ALL_QUESTIONS = [
     { year: "1929", answer: "Les Ailes" },
@@ -1125,7 +1132,8 @@
   let elapsedSeconds = 0;
   let streak = 0;
   let answerHistory = [];
-  let leaderboard = JSON.parse(localStorage.getItem('oscars_leaderboard20')) || [];
+  let leaderboard = [];           // chargé depuis Supabase à la demande
+  let currentUser = null;         // utilisateur connecté (null si déconnecté)
 
   // ─── DOM ──────────────────────────────────────────────────────────
   const modeSelector    = document.getElementById('modeSelector');
@@ -1238,7 +1246,20 @@
 
   // ─── MODE SELECTION ─────────────────────────────────────────────────
   modeClassicBtn.addEventListener('click', () => { gameMode = 'classic';      initClassicMode(); });
-  mode20Btn.addEventListener('click',      () => { gameMode = '20questions';  init20QuestionsMode(); });
+  mode20Btn.addEventListener('click', async () => {
+    // Mode classé : connexion obligatoire
+    if (!currentUser) {
+      showAuthModal(async () => {
+        currentUser = await getCurrentUser();
+        renderUserBadge();
+        gameMode = '20questions';
+        init20QuestionsMode();
+      });
+      return;
+    }
+    gameMode = '20questions';
+    init20QuestionsMode();
+  });
 
   function initClassicMode() {
     modeSelector.style.display = 'none';
@@ -1400,36 +1421,66 @@
     }
   }
 
-  function showLeaderboard() {
+  async function showLeaderboard() {
     endScreen.style.display = 'none';
     leaderboardContainer.classList.add('show');
 
-    const name = prompt('Entrez votre nom (ou pseudo) :') || 'Anonyme';
-    const newEntry = { name, score: scoreCorrect, time: elapsedSeconds, total: 20 };
+    // Affichage temporaire pendant soumission
+    leaderboardTable.innerHTML = '<div style="padding:40px;text-align:center;color:var(--or);font-style:italic;">Enregistrement de votre score…</div>';
 
-    leaderboard.push(newEntry);
-    leaderboard.sort((a, b) => b.score !== a.score ? b.score - a.score : a.time - b.time);
-    localStorage.setItem('oscars_leaderboard20', JSON.stringify(leaderboard));
-
-    renderLeaderboard();
+    try {
+      const result = await submitScore(QUIZ_ID, scoreCorrect, 20, elapsedSeconds);
+      leaderboard = await fetchLeaderboard(QUIZ_ID, 50);
+      renderLeaderboard(result);
+    } catch (err) {
+      leaderboardTable.innerHTML =
+        `<div style="padding:40px;text-align:center;color:#ffb4b4;font-style:italic;">
+           Erreur : ${err.message}<br>Votre score n'a pas pu être enregistré.
+         </div>`;
+    }
   }
 
-  function renderLeaderboard() {
-    let html = '<div class="leaderboard-row header">';
+  function renderLeaderboard(submitResult = null) {
+    let html = '';
+
+    if (submitResult) {
+      if (submitResult.inserted) {
+        html += '<div style="padding:14px 20px;margin-bottom:14px;background:rgba(42,107,58,0.15);border-left:2px solid #2a6b3a;color:#aaf0bc;font-style:italic;text-align:center;">'
+              + '✦ Nouveau record personnel enregistré ! ✦</div>';
+      } else {
+        html += `<div style="padding:14px 20px;margin-bottom:14px;background:rgba(201,168,76,0.08);border-left:2px solid var(--or);color:var(--or-pale);font-style:italic;text-align:center;">
+                   Votre meilleur score reste ${submitResult.best.score}/20 en ${formatTime(submitResult.best.time_seconds)}.
+                 </div>`;
+      }
+    }
+
+    html += '<div class="leaderboard-row header">';
     html += '<div>Rang</div><div>Nom</div><div>Score</div><div>Temps</div>';
     html += '</div>';
 
-    leaderboard.forEach((entry, idx) => {
-      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
-      html += '<div class="leaderboard-row">';
-      html += `<div class="leaderboard-rank">${medal}</div>`;
-      html += `<div class="leaderboard-name">${entry.name}</div>`;
-      html += `<div class="leaderboard-score">${entry.score}/20</div>`;
-      html += `<div class="leaderboard-time">${formatTime(entry.time)}</div>`;
-      html += '</div>';
-    });
+    if (leaderboard.length === 0) {
+      html += '<div style="padding:30px;text-align:center;color:var(--gris);font-style:italic;">Aucun score enregistré pour le moment.</div>';
+    } else {
+      leaderboard.forEach((entry, idx) => {
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
+        const isMe = currentUser && entry.username === currentUser.username;
+        const rowStyle = isMe ? 'style="background:rgba(201,168,76,0.08);"' : '';
+        html += `<div class="leaderboard-row" ${rowStyle}>`;
+        html += `<div class="leaderboard-rank">${medal}</div>`;
+        html += `<div class="leaderboard-name">${escapeHtml(entry.username)}${isMe ? ' ✦' : ''}</div>`;
+        html += `<div class="leaderboard-score">${entry.score}/${entry.total}</div>`;
+        html += `<div class="leaderboard-time">${formatTime(entry.time_seconds)}</div>`;
+        html += '</div>';
+      });
+    }
 
     leaderboardTable.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
   }
 
   function restart() {
@@ -1529,6 +1580,34 @@
     trainingSearch.value = '';
     modeSelector.style.display = '';
   });
+
+  // ─── BADGE UTILISATEUR + INIT AUTH ─────────────────────────────────
+  function renderUserBadge() {
+    const slot = document.getElementById('userBadgeSlot');
+    if (!slot) return;
+    if (currentUser) {
+      slot.innerHTML = `
+        <span class="lq-user-badge" id="userBadgeBtn" title="Se déconnecter">
+          <span class="dot"></span>${escapeHtml(currentUser.username)}
+        </span>`;
+      document.getElementById('userBadgeBtn').addEventListener('click', async () => {
+        if (confirm('Se déconnecter ?')) await signOut();
+      });
+    } else {
+      slot.innerHTML = `<span class="lq-user-badge" id="userBadgeBtn">Connexion</span>`;
+      document.getElementById('userBadgeBtn').addEventListener('click', () => {
+        showAuthModal(async () => {
+          currentUser = await getCurrentUser();
+          renderUserBadge();
+        });
+      });
+    }
+  }
+
+  (async () => {
+    currentUser = await getCurrentUser();
+    renderUserBadge();
+  })();
 
   </script>
 

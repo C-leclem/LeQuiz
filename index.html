@@ -359,6 +359,9 @@
   <div class="curtain-left"></div>
   <div class="curtain-right"></div>
 
+  <!-- Badge utilisateur / Connexion -->
+  <div id="userBadgeSlot" style="position:fixed;top:24px;right:30px;z-index:100;"></div>
+
   <div class="page">
 
     <header>
@@ -446,6 +449,47 @@
     </footer>
 
   </div>
+
+  <script type="module">
+    import {
+      showAuthModal, getCurrentUser, signOut
+    } from './lequiz-auth.js';
+
+    let currentUser = null;
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, c => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+      })[c]);
+    }
+
+    function renderUserBadge() {
+      const slot = document.getElementById('userBadgeSlot');
+      if (!slot) return;
+      if (currentUser) {
+        slot.innerHTML = `
+          <span class="lq-user-badge" id="userBadgeBtn" title="Se déconnecter">
+            <span class="dot"></span>${escapeHtml(currentUser.username)}
+          </span>`;
+        document.getElementById('userBadgeBtn').addEventListener('click', async () => {
+          if (confirm('Se déconnecter ?')) await signOut();
+        });
+      } else {
+        slot.innerHTML = `<span class="lq-user-badge" id="userBadgeBtn">Connexion</span>`;
+        document.getElementById('userBadgeBtn').addEventListener('click', () => {
+          showAuthModal(async () => {
+            currentUser = await getCurrentUser();
+            renderUserBadge();
+          });
+        });
+      }
+    }
+
+    (async () => {
+      currentUser = await getCurrentUser();
+      renderUserBadge();
+    })();
+  </script>
 
 </body>
 </html>
