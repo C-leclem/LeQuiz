@@ -3,11 +3,6 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // À inclure dans chaque page via :
 //   <script type="module" src="lequiz-auth.js"></script>
-//
-// ⚠️ AVANT UTILISATION : remplacer SUPABASE_URL et SUPABASE_ANON_KEY
-//    par tes propres identifiants (trouvables dans Supabase > Project Settings
-//    > API). La clé "anon" est publique, c'est normal — la sécurité est
-//    assurée par la Row Level Security (RLS) définie dans le schéma SQL.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -15,8 +10,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ───────────────────────────────────────────────────────────────────────────
 // CONFIGURATION — À MODIFIER
 // ───────────────────────────────────────────────────────────────────────────
-const SUPABASE_URL      = 'https://TON-PROJET.supabase.co';
-const SUPABASE_ANON_KEY = 'TA_CLE_ANON_ICI';
+const SUPABASE_URL      = 'https://cvrmmqnqisaamuctwzhb.supabase.co';
+const SUPABASE_ANON_KEY = 'sb_publishable_EO6QnQu107gJFMar9TsSng_wmuwgvKQ';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
