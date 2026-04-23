@@ -3,6 +3,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // À inclure dans chaque page via :
 //   <script type="module" src="lequiz-auth.js"></script>
+//
+// ⚠️ AVANT UTILISATION : remplacer SUPABASE_URL et SUPABASE_ANON_KEY
+//    par tes propres identifiants (trouvables dans Supabase > Project Settings
+//    > API). La clé "anon" est publique, c'est normal — la sécurité est
+//    assurée par la Row Level Security (RLS) définie dans le schéma SQL.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -10,8 +15,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ───────────────────────────────────────────────────────────────────────────
 // CONFIGURATION — À MODIFIER
 // ───────────────────────────────────────────────────────────────────────────
-const SUPABASE_URL      = 'https://cvrmmqnqisaamuctwzhb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_EO6QnQu107gJFMar9TsSng_wmuwgvKQ';
+const SUPABASE_URL      = 'https://TON-PROJET.supabase.co';
+const SUPABASE_ANON_KEY = 'TA_CLE_ANON_ICI';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -426,4 +431,303 @@ export async function fetchLeaderboard(quizId, limit = 50) {
     .limit(limit);
   if (error) throw new Error(error.message);
   return data || [];
+}
+
+// ───────────────────────────────────────────────────────────────────────────
+// PREVIEW DU CLASSEMENT (sur l'écran de sélection du mode)
+// ───────────────────────────────────────────────────────────────────────────
+const PREVIEW_STYLES = `
+  .lq-preview {
+    width: 100%;
+    max-width: 640px;
+    margin: 50px auto 0;
+    padding: 0 24px;
+    animation: lqPreviewFade 0.8s ease both;
+  }
+  @keyframes lqPreviewFade {
+    from { opacity: 0; transform: translateY(20px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+
+  .lq-preview-divider {
+    display: flex; align-items: center; gap: 16px;
+    margin-bottom: 28px;
+  }
+  .lq-preview-divider .line {
+    flex: 1; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(201,168,76,0.4), transparent);
+  }
+  .lq-preview-divider .diamond {
+    width: 7px; height: 7px; background: #c9a84c; transform: rotate(45deg);
+  }
+
+  .lq-preview-header {
+    text-align: center;
+    margin-bottom: 22px;
+  }
+  .lq-preview-label {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 300;
+    font-size: 0.7rem;
+    letter-spacing: 0.35em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+  .lq-preview-title {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: #f5e4b0;
+    letter-spacing: 0.04em;
+    margin-top: 6px;
+  }
+
+  .lq-preview-box {
+    background: #1e1810;
+    border: 1px solid rgba(201,168,76,0.2);
+    box-shadow: 0 10px 40px rgba(0,0,0,0.4);
+  }
+
+  .lq-preview-table { width: 100%; }
+
+  .lq-preview-row {
+    display: grid;
+    grid-template-columns: 60px 1fr 90px 110px;
+    align-items: center;
+    padding: 14px 24px;
+    border-bottom: 1px solid rgba(201,168,76,0.08);
+  }
+  .lq-preview-row:last-child { border-bottom: none; }
+
+  .lq-preview-row.header {
+    background: rgba(201,168,76,0.06);
+    border-bottom: 1px solid rgba(201,168,76,0.2);
+  }
+  .lq-preview-row.header > div {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 0.7rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    color: #c9a84c;
+  }
+
+  .lq-preview-row.me {
+    background: rgba(201,168,76,0.08);
+  }
+
+  .lq-preview-rank {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+    font-size: 1.3rem;
+    color: #c9a84c;
+    text-align: center;
+  }
+  .lq-preview-name {
+    color: #f7f0e0;
+    font-size: 1.1rem;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  .lq-preview-name .me-star {
+    color: #c9a84c;
+    margin-left: 6px;
+    font-size: 0.9em;
+  }
+  .lq-preview-score {
+    text-align: center;
+    color: #e8c870;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 400;
+    font-size: 0.95rem;
+  }
+  .lq-preview-time {
+    text-align: right;
+    color: #f5e4b0;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 300;
+    font-size: 0.95rem;
+  }
+
+  .lq-preview-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6b6050;
+    font-style: italic;
+  }
+
+  .lq-preview-loading {
+    padding: 40px 20px;
+    text-align: center;
+    color: #c9a84c;
+    font-style: italic;
+  }
+
+  .lq-preview-expand {
+    margin-top: 18px;
+    text-align: center;
+  }
+  .lq-preview-expand button {
+    background: none;
+    border: 1px solid rgba(201,168,76,0.3);
+    color: #c9a84c;
+    font-family: 'Oswald', sans-serif;
+    font-weight: 300;
+    font-size: 0.75rem;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    padding: 10px 26px;
+    cursor: pointer;
+    transition: all 0.25s ease;
+  }
+  .lq-preview-expand button:hover {
+    background: rgba(201,168,76,0.1);
+    color: #e8c870;
+    letter-spacing: 0.35em;
+  }
+
+  .lq-preview-extra {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.5s ease;
+  }
+  .lq-preview-extra.open {
+    max-height: 3000px;
+  }
+
+  @media (max-width: 580px) {
+    .lq-preview-row {
+      grid-template-columns: 44px 1fr 70px 90px;
+      padding: 12px 16px;
+      font-size: 0.9rem;
+    }
+    .lq-preview-name { font-size: 1rem; }
+  }
+`;
+
+let _previewStylesInjected = false;
+function injectPreviewStyles() {
+  if (_previewStylesInjected) return;
+  const s = document.createElement('style');
+  s.textContent = PREVIEW_STYLES;
+  document.head.appendChild(s);
+  _previewStylesInjected = true;
+}
+
+/**
+ * Initialise (ou rafraîchit) un aperçu de classement dans le conteneur cible.
+ * Affiche le top 5 + un bouton « Voir tout » qui déploie les suivants (jusqu'à 50).
+ *
+ * @param {string} containerId - L'id de la div où injecter le preview
+ * @param {string} quizId      - 'oscars', 'departements', 'presidents'
+ * @param {number} totalQuestions - 20 ou 10
+ */
+export async function renderLeaderboardPreview(containerId, quizId, totalQuestions) {
+  injectPreviewStyles();
+  const container = document.getElementById(containerId);
+  if (!container) return;
+
+  // Structure initiale avec loader
+  container.innerHTML = `
+    <div class="lq-preview">
+      <div class="lq-preview-divider">
+        <div class="line"></div>
+        <div class="diamond"></div>
+        <div class="line"></div>
+      </div>
+      <div class="lq-preview-header">
+        <div class="lq-preview-label">✦ Hall of Fame ✦</div>
+        <div class="lq-preview-title">Meilleurs joueurs</div>
+      </div>
+      <div class="lq-preview-box">
+        <div class="lq-preview-table" id="lq-preview-table-${containerId}">
+          <div class="lq-preview-loading">Chargement du classement…</div>
+        </div>
+      </div>
+      <div class="lq-preview-expand" id="lq-preview-expand-${containerId}" style="display:none;">
+        <button type="button">Voir tout</button>
+      </div>
+    </div>
+  `;
+
+  const tableEl  = document.getElementById(`lq-preview-table-${containerId}`);
+  const expandEl = document.getElementById(`lq-preview-expand-${containerId}`);
+
+  try {
+    const [entries, me] = await Promise.all([
+      fetchLeaderboard(quizId, 50),
+      getCurrentUser()
+    ]);
+
+    if (entries.length === 0) {
+      tableEl.innerHTML = `
+        <div class="lq-preview-empty">
+          Aucun score enregistré pour l'instant.<br>
+          <span style="font-size:0.9em;opacity:0.8;">Soyez le premier à relever le défi.</span>
+        </div>`;
+      return;
+    }
+
+    // Top 5 + reste
+    const top = entries.slice(0, 5);
+    const rest = entries.slice(5);
+
+    const renderRows = (rows, startIdx) => rows.map((entry, i) => {
+      const idx = startIdx + i;
+      const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
+      const isMe = me && entry.username === me.username;
+      return `
+        <div class="lq-preview-row${isMe ? ' me' : ''}">
+          <div class="lq-preview-rank">${medal}</div>
+          <div class="lq-preview-name">${_escapeHtml(entry.username)}${isMe ? '<span class="me-star">✦</span>' : ''}</div>
+          <div class="lq-preview-score">${entry.score}/${entry.total}</div>
+          <div class="lq-preview-time">${_formatTime(entry.time_seconds)}</div>
+        </div>`;
+    }).join('');
+
+    let html = `
+      <div class="lq-preview-row header">
+        <div>Rang</div><div>Nom</div><div>Score</div><div>Temps</div>
+      </div>
+      ${renderRows(top, 0)}
+    `;
+
+    if (rest.length > 0) {
+      html += `<div class="lq-preview-extra" id="lq-preview-extra-${containerId}">
+                 ${renderRows(rest, 5)}
+               </div>`;
+    }
+
+    tableEl.innerHTML = html;
+
+    // Gestion du bouton « Voir tout »
+    if (rest.length > 0) {
+      expandEl.style.display = '';
+      const btn = expandEl.querySelector('button');
+      const extraEl = document.getElementById(`lq-preview-extra-${containerId}`);
+      btn.addEventListener('click', () => {
+        const isOpen = extraEl.classList.toggle('open');
+        btn.textContent = isOpen ? 'Masquer' : `Voir tout (${entries.length})`;
+      });
+      btn.textContent = `Voir tout (${entries.length})`;
+    }
+
+  } catch (err) {
+    tableEl.innerHTML = `
+      <div class="lq-preview-empty">
+        Impossible de charger le classement.<br>
+        <span style="font-size:0.85em;opacity:0.7;">${_escapeHtml(err.message || '')}</span>
+      </div>`;
+  }
+}
+
+function _escapeHtml(s) {
+  return String(s).replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  })[c]);
+}
+
+function _formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = seconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
 }

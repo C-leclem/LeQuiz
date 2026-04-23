@@ -870,6 +870,7 @@
         <button class="mode-btn" id="mode20">Mode 20 Questions</button>
         <button class="mode-btn" id="modeTraining">📖 Mode Entraînement</button>
       </div>
+      <div id="leaderboardPreview"></div>
     </div>
 
     <!-- Mode Entraînement -->
@@ -990,7 +991,7 @@
   <script type="module">
   import {
     supabase, showAuthModal, getCurrentUser, signOut,
-    submitScore, fetchLeaderboard
+    submitScore, fetchLeaderboard, renderLeaderboardPreview
   } from './lequiz-auth.js';
 
   const QUIZ_ID = 'departements';
@@ -1557,6 +1558,9 @@
     const allQuestions = [...QUESTIONS];
     QUESTIONS.length = 0;
     QUESTIONS.push(...allQuestions);
+
+    // Rafraîchir le classement au retour au menu
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
   }
 
   // ─── ÉTOILES CONFETTI ──────────────────────────────────────────────────
@@ -1657,6 +1661,7 @@
         showAuthModal(async () => {
           currentUser = await getCurrentUser();
           renderUserBadge();
+          renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
         });
       });
     }
@@ -1665,6 +1670,7 @@
   (async () => {
     currentUser = await getCurrentUser();
     renderUserBadge();
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
   })();
 
   </script>

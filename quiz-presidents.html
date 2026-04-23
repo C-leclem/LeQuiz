@@ -770,6 +770,7 @@
         <button class="mode-btn" id="mode20">Mode 10 Questions</button>
         <button class="mode-btn" id="modeTraining">📖 Mode Entraînement</button>
       </div>
+      <div id="leaderboardPreview"></div>
     </div>
 
     <!-- Mode Entraînement -->
@@ -890,7 +891,7 @@
   <script type="module">
   import {
     supabase, showAuthModal, getCurrentUser, signOut,
-    submitScore, fetchLeaderboard
+    submitScore, fetchLeaderboard, renderLeaderboardPreview
   } from './lequiz-auth.js';
 
   const QUIZ_ID = 'presidents';
@@ -1348,6 +1349,8 @@
     modeSelector.style.display = 'block';
     quizHeader.classList.remove('show');
     QUESTIONS.length = 0;
+    // Rafraîchir le classement au retour au menu
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 10);
   }
 
   // ─── ÉTOILES CONFETTI ─────────────────────────────────────────────
@@ -1442,6 +1445,7 @@
         showAuthModal(async () => {
           currentUser = await getCurrentUser();
           renderUserBadge();
+          renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 10);
         });
       });
     }
@@ -1450,6 +1454,7 @@
   (async () => {
     currentUser = await getCurrentUser();
     renderUserBadge();
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 10);
   })();
 
   </script>
