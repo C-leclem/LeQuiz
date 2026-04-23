@@ -3,6 +3,11 @@
 // ═══════════════════════════════════════════════════════════════════════════
 // À inclure dans chaque page via :
 //   <script type="module" src="lequiz-auth.js"></script>
+//
+// ⚠️ AVANT UTILISATION : remplacer SUPABASE_URL et SUPABASE_ANON_KEY
+//    par tes propres identifiants (trouvables dans Supabase > Project Settings
+//    > API). La clé "anon" est publique, c'est normal — la sécurité est
+//    assurée par la Row Level Security (RLS) définie dans le schéma SQL.
 // ═══════════════════════════════════════════════════════════════════════════
 
 import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/+esm';
@@ -10,8 +15,8 @@ import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js
 // ───────────────────────────────────────────────────────────────────────────
 // CONFIGURATION — À MODIFIER
 // ───────────────────────────────────────────────────────────────────────────
-const SUPABASE_URL      = 'https://cvrmmqnqisaamuctwzhb.supabase.co';
-const SUPABASE_ANON_KEY = 'sb_publishable_EO6QnQu107gJFMar9TsSng_wmuwgvKQ';
+const SUPABASE_URL      = 'https://TON-PROJET.supabase.co';
+const SUPABASE_ANON_KEY = 'TA_CLE_ANON_ICI';
 
 export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -254,16 +259,29 @@ function injectModal() {
 
     try {
       if (mode === 'signup') {
-        await signUp(usernameEl.value.trim(), emailEl.value.trim(), passwordEl.value);
-        showMessage('Compte créé ! Vérifiez votre email si confirmation demandée.', 'success');
+        const user = await signUp(usernameEl.value.trim(), emailEl.value.trim(), passwordEl.value);
+        // Vérifier si la session est active (confirmation email désactivée)
+        // ou si une confirmation est nécessaire
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+          showMessage('Compte créé et connecté !', 'success');
+          setTimeout(() => {
+            hideAuthModal();
+            if (_onAuthSuccess) _onAuthSuccess();
+          }, 600);
+        } else {
+          showMessage('Compte créé ! Un email de confirmation vous a été envoyé. Cliquez sur le lien, puis revenez ici pour vous connecter.', 'success');
+          // Ne pas fermer la modal, l'utilisateur doit confirmer puis se reconnecter
+          setTimeout(() => { setMode('signin'); }, 2500);
+        }
       } else {
         await signIn(emailEl.value.trim(), passwordEl.value);
         showMessage('Connecté !', 'success');
+        setTimeout(() => {
+          hideAuthModal();
+          if (_onAuthSuccess) _onAuthSuccess();
+        }, 600);
       }
-      setTimeout(() => {
-        hideAuthModal();
-        if (_onAuthSuccess) _onAuthSuccess();
-      }, 600);
     } catch (err) {
       showMessage(err.message || 'Erreur inconnue', 'error');
     } finally {
@@ -298,26 +316,28 @@ async function signUp(username, email, password) {
     throw new Error('Pseudo invalide : 3-20 caractères, lettres/chiffres/_-');
   }
 
-  // Vérifier que le pseudo est libre
-  const { data: existing } = await supabase
-    .from('profiles').select('id').eq('username', username).maybeSingle();
-  if (existing) throw new Error('Ce pseudo est déjà pris.');
+  // 1. Vérifier que le pseudo est libre via la fonction RPC (insensible à la casse)
+  const { data: available, error: rpcErr } = await supabase
+    .rpc('username_available', { p_username: username });
+  if (rpcErr) throw new Error('Impossible de vérifier le pseudo : ' + rpcErr.message);
+  if (available === false) throw new Error('Ce pseudo est déjà pris.');
 
-  // Créer le compte
-  const { data, error } = await supabase.auth.signUp({ email, password });
-  if (error) throw new Error(translateError(error.message));
+  // 2. Créer le compte avec le pseudo stocké dans les user_metadata
+  //    Le trigger SQL `handle_new_user` se charge de créer le profil côté serveur.
+  const { data, error } = await supabase.auth.signUp({
+    email,
+    password,
+    options: {
+      data: { username }
+    }
+  });
+
+  if (error) {
+    // Peut aussi venir du trigger si pseudo pris entre-temps ou invalide
+    throw new Error(translateError(error.message));
+  }
   if (!data.user) throw new Error('Erreur de création du compte.');
 
-  // Créer le profil lié
-  const { error: pErr } = await supabase.from('profiles').insert({
-    id: data.user.id,
-    username
-  });
-  if (pErr) {
-    // Si on échoue à créer le profil, on supprime la session
-    await supabase.auth.signOut();
-    throw new Error('Impossible de créer le profil : ' + pErr.message);
-  }
   return data.user;
 }
 
@@ -335,9 +355,16 @@ export async function signOut() {
 function translateError(msg) {
   const m = msg.toLowerCase();
   if (m.includes('invalid login')) return 'Email ou mot de passe incorrect.';
-  if (m.includes('already registered')) return 'Cet email est déjà utilisé.';
+  if (m.includes('already registered') || m.includes('user already')) return 'Cet email est déjà utilisé.';
+  if (m.includes('pseudo est déjà pris') || m.includes('already taken')) return 'Ce pseudo est déjà pris.';
+  if (m.includes('pseudo manquant') || m.includes('pseudo invalide')) return 'Pseudo manquant ou invalide.';
   if (m.includes('password'))      return 'Mot de passe trop faible (6 caractères minimum).';
+  if (m.includes('email not confirmed')) return 'Email non confirmé. Vérifiez votre boîte de réception.';
   if (m.includes('email'))         return 'Email invalide.';
+  if (m.includes('database error saving new user')) {
+    // Ce message générique apparaît quand le trigger handle_new_user échoue
+    return 'Erreur serveur : ce pseudo est probablement déjà pris, ou invalide.';
+  }
   return msg;
 }
 
