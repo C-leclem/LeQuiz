@@ -1,0 +1,1889 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Les capitales du monde — LeQuiz</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Oswald:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --noir: #061018;        /* Bleu nuit profond, océanique */
+  --noir-moyen: #0d1d2c;
+  --noir-clair: #14283b;
+  --or: #2dd4bf;          /* Vert émeraude / turquoise */
+  --or-clair: #5eead4;
+  --or-pale: #99f6e4;
+  --creme: #e0f2fe;       /* Bleu ciel très pâle */
+  --rouge: #c0453a;
+  --bleu: #38bdf8;        /* Bleu ciel principal */
+  --bleu-clair: #7dd3fc;
+  --bleu-pale: #bae6fd;
+  --gris: #64748b;        /* Gris ardoise */
+}
+
+    html, body {
+      height: 100%;
+      background: var(--noir);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' result='noise'/%3C/filter%3E%3Crect width='256' height='256' fill='%23061018' filter='url(%23noise)' opacity='0.05'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 9999;
+      opacity: 0.4;
+    }
+
+.spotlight {
+  position: fixed;
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 700px;
+  height: 800px;
+  background: radial-gradient(ellipse at center top, rgba(56,189,248,0.10) 0%, transparent 65%);
+  pointer-events: none;
+  z-index: 0;
+}
+
+    .curtain-left, .curtain-right {
+      position: fixed;
+      top: 0;
+      width: 80px;
+      height: 100%;
+      z-index: 1;
+      pointer-events: none;
+    }
+.curtain-left  { left: 0;  background: linear-gradient(to right, rgba(45,212,191,0.18) 0%, transparent 100%); }
+.curtain-right { right: 0; background: linear-gradient(to left,  rgba(45,212,191,0.18) 0%, transparent 100%); }
+
+    /* ─── PAGE LAYOUT ─── */
+    .page {
+      position: relative;
+      z-index: 2;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* ─── TOP NAV ─── */
+    .top-nav {
+      width: 100%;
+      padding: 20px 30px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      border-bottom: 1px solid rgba(56,189,248,0.12);
+    }
+
+    .back-link {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      transition: color 0.3s ease;
+    }
+    .back-link:hover { color: var(--or); }
+
+    .nav-logo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--or);
+      text-decoration: none;
+      letter-spacing: 0.1em;
+    }
+
+    .progress-wrap {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .progress-text {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      color: var(--gris);
+      min-width: 70px;
+      text-align: right;
+    }
+
+    .timer-display {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--or);
+      min-width: 60px;
+      text-align: center;
+    }
+
+    /* ─── MODE SELECTOR ─── */
+    .mode-selector {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      text-align: center;
+      margin-top: 60px;
+    }
+
+    .mode-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 5vw, 3.2rem);
+      font-weight: 900;
+      color: var(--bleu-pale);
+      margin-bottom: 40px;
+    }
+
+    .mode-buttons {
+      display: flex;
+      gap: 20px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-bottom: 60px;
+    }
+
+    .mode-btn {
+      background: linear-gradient(135deg, rgba(56,189,248,0.18) 0%, rgba(45,212,191,0.06) 100%);
+      border: 2px solid rgba(56,189,248,0.4);
+      color: var(--bleu-pale);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      padding: 18px 32px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+
+    .mode-btn:hover {
+      background: linear-gradient(135deg, rgba(56,189,248,0.30) 0%, rgba(45,212,191,0.15) 100%);
+      border-color: var(--or);
+      transform: translateY(-2px);
+      box-shadow: 0 10px 30px rgba(56,189,248,0.18);
+    }
+
+    /* ─── QUIZ HEADER ─── */
+    .quiz-header {
+      text-align: center;
+      padding: 50px 20px 0;
+      animation: fadeDown 0.8s ease both;
+      display: none;
+    }
+
+    .quiz-header.show { display: block; }
+
+    @keyframes fadeDown {
+      from { opacity: 0; transform: translateY(-20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .quiz-category {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 12px;
+    }
+
+   .quiz-title {
+  font-family: 'Playfair Display', serif;
+  font-size: clamp(2rem, 5vw, 3.2rem);
+  font-weight: 900;
+  color: var(--bleu-pale);
+  text-shadow: 0 0 40px rgba(56,189,248,0.20);
+}
+    .score-bar {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 28px;
+      margin-top: 24px;
+      padding-bottom: 30px;
+    }
+
+    .score-item {
+      text-align: center;
+    }
+
+    .score-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 700;
+      color: var(--or);
+      line-height: 1;
+    }
+
+    .score-val.wrong { color: #c0453a; }
+    .score-val.skip { color: var(--gris); }
+
+    .score-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.6rem;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-top: 4px;
+    }
+
+    .score-sep {
+      width: 1px;
+      height: 30px;
+      background: rgba(56,189,248,0.2);
+    }
+
+    /* ─── QUESTION CARD ─── */
+    .quiz-stage {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      animation: fadeIn 0.5s ease both;
+      display: none;
+    }
+
+    .quiz-stage.show { display: block; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+
+    .question-card {
+      background: var(--noir-clair);
+      border: 1px solid rgba(56,189,248,0.22);
+      padding: 40px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .question-card::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 2px;
+      background: linear-gradient(to right, transparent, var(--bleu), var(--or), transparent);
+    }
+
+    .q-year-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.65rem;
+      font-weight: 300;
+      letter-spacing: 0.4em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-bottom: 12px;
+    }
+
+    .q-year {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 6vw, 3.4rem);
+      font-weight: 900;
+      color: var(--bleu);
+      line-height: 1.15;
+      text-shadow: 0 0 60px rgba(56,189,248,0.25);
+      margin-bottom: 8px;
+      word-wrap: break-word;
+    }
+
+    .q-question {
+      font-size: 1.1rem;
+      font-style: italic;
+      color: rgba(224,242,254,0.6);
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+
+    /* CARD TIMER */
+    .card-timer {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      margin-bottom: 18px;
+      padding: 14px 0;
+      border-top: 1px solid rgba(56,189,248,0.12);
+      border-bottom: 1px solid rgba(56,189,248,0.12);
+    }
+
+    .card-timer-icon {
+      font-size: 1.4rem;
+      opacity: 0.7;
+    }
+
+    .card-timer-value {
+      font-family: 'Oswald', sans-serif;
+      font-size: 2.4rem;
+      font-weight: 500;
+      letter-spacing: 0.1em;
+      color: var(--or);
+      line-height: 1;
+    }
+
+    .card-timer-value.warning { color: #e8a040; }
+    .card-timer-value.danger  { color: #c0453a; }
+
+    /* INPUT */
+    .input-row {
+      display: flex;
+      gap: 10px;
+      align-items: stretch;
+    }
+
+    .answer-input {
+      flex: 1;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(56,189,248,0.28);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.15rem;
+      font-style: italic;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.3s ease, box-shadow 0.3s ease;
+      width: 100%;
+    }
+
+    .answer-input::placeholder {
+      color: rgba(224,242,254,0.25);
+      font-style: italic;
+    }
+
+    .answer-input:focus {
+      border-color: rgba(56,189,248,0.65);
+      box-shadow: 0 0 20px rgba(56,189,248,0.10);
+    }
+
+    .answer-input.correct {
+      border-color: var(--or);
+      background: rgba(45,212,191,0.10);
+      color: var(--or-pale);
+    }
+
+    .answer-input.wrong {
+      border-color: #c0453a;
+      background: rgba(192,69,58,0.1);
+      color: #ffaaaa;
+    }
+
+    .submit-btn {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 600;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      padding: 14px 22px;
+      cursor: pointer;
+      transition: background 0.3s ease, transform 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .submit-btn:hover { background: var(--or-clair); transform: translateY(-1px); }
+    .submit-btn:active { transform: translateY(0); }
+    .submit-btn:disabled { opacity: 0.4; cursor: default; transform: none; }
+
+    /* FEEDBACK */
+    .feedback {
+      margin-top: 18px;
+      padding: 14px 18px;
+      font-size: 1rem;
+      line-height: 1.6;
+      min-height: 52px;
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      flex-wrap: wrap;
+    }
+
+    .feedback.show { opacity: 1; }
+
+    .feedback.correct {
+      background: rgba(45,212,191,0.12);
+      border-left: 3px solid var(--or);
+      color: var(--or-pale);
+    }
+
+    .feedback.wrong {
+      background: rgba(192,69,58,0.12);
+      border-left: 3px solid #c0453a;
+      color: #ffaaaa;
+    }
+
+    .feedback.skip {
+      background: rgba(100,116,139,0.18);
+      border-left: 3px solid var(--gris);
+      color: rgba(224,242,254,0.6);
+    }
+
+    .feedback-icon { font-size: 1.2rem; flex-shrink: 0; }
+
+    .feedback-main {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .feedback-note {
+      display: block;
+      margin-top: 8px;
+      padding-top: 8px;
+      border-top: 1px dashed rgba(255,255,255,0.12);
+      font-size: 0.9rem;
+      font-style: italic;
+      color: rgba(224,242,254,0.55);
+      line-height: 1.55;
+    }
+
+    .feedback-note::before {
+      content: '✦ ';
+      color: var(--bleu);
+      font-style: normal;
+      margin-right: 4px;
+    }
+
+    /* NEXT ROW */
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: 20px;
+      padding-top: 20px;
+      border-top: 1px solid rgba(56,189,248,0.12);
+    }
+
+    .skip-btn {
+      background: none;
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 300;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      color: var(--gris);
+      cursor: pointer;
+      transition: color 0.3s ease;
+      padding: 0;
+    }
+    .skip-btn:hover { color: var(--bleu-pale); }
+
+    .next-btn {
+      background: none;
+      border: 1px solid rgba(56,189,248,0.4);
+      color: var(--bleu);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      font-weight: 400;
+      letter-spacing: 0.25em;
+      text-transform: uppercase;
+      padding: 12px 24px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .next-btn:hover {
+      background: rgba(56,189,248,0.12);
+      border-color: var(--bleu);
+    }
+
+    /* ─── BARRE DE PROGRESSION COLORÉE ─── */
+    .progress-outer {
+      width: 100%;
+      height: 10px;
+      background: rgba(255,255,255,0.05);
+      margin-top: 24px;
+      display: flex;
+      overflow: hidden;
+      border-radius: 2px;
+    }
+
+    .progress-inner { display: none; }
+
+    .progress-segment {
+      height: 100%;
+      flex: 1;
+      animation: segPop 0.35s cubic-bezier(0.34,1.56,0.64,1) both;
+    }
+
+    @keyframes segPop {
+      from { transform: scaleX(0); transform-origin: left; }
+      to   { transform: scaleX(1); transform-origin: left; }
+    }
+
+    .progress-segment.correct { background: var(--or); }
+    .progress-segment.wrong   { background: #c0453a; }
+    .progress-segment.skip    { background: #4a5568; }
+    .progress-segment.pending { background: rgba(255,255,255,0.06); }
+
+    /* ─── FLAMMES LATÉRALES ─── */
+    .flame-overlay {
+      position: fixed;
+      top: 0;
+      width: 140px;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10;
+      opacity: 0;
+      transition: opacity 0.8s ease;
+    }
+    .flame-overlay.active { opacity: 1; }
+    .flame-overlay.left  { left: 0; }
+    .flame-overlay.right { right: 0; }
+
+    .flame {
+      position: absolute;
+      bottom: 0;
+      font-size: 2.8rem;
+      animation: flameDance 0.8s ease-in-out infinite alternate;
+      filter: drop-shadow(0 0 12px rgba(255,140,0,0.8));
+    }
+    .flame-overlay.left  .flame { left: 4px; }
+    .flame-overlay.right .flame { right: 4px; }
+
+    @keyframes flameDance {
+      0%   { transform: scaleX(1)   scaleY(1)   rotate(-3deg); }
+      100% { transform: scaleX(1.1) scaleY(1.08) rotate(3deg); }
+    }
+
+    .flame:nth-child(1)  { bottom:  0%;  animation-delay: 0.00s; font-size: 3.2rem; }
+    .flame:nth-child(2)  { bottom:  8%;  animation-delay: 0.12s; font-size: 2.4rem; }
+    .flame:nth-child(3)  { bottom: 16%;  animation-delay: 0.24s; font-size: 2.8rem; }
+    .flame:nth-child(4)  { bottom: 24%;  animation-delay: 0.07s; font-size: 2.2rem; }
+    .flame:nth-child(5)  { bottom: 32%;  animation-delay: 0.18s; font-size: 3.0rem; }
+    .flame:nth-child(6)  { bottom: 40%;  animation-delay: 0.30s; font-size: 2.5rem; }
+    .flame:nth-child(7)  { bottom: 48%;  animation-delay: 0.05s; font-size: 2.0rem; }
+    .flame:nth-child(8)  { bottom: 56%;  animation-delay: 0.22s; font-size: 2.6rem; }
+    .flame:nth-child(9)  { bottom: 64%;  animation-delay: 0.14s; font-size: 2.2rem; }
+    .flame:nth-child(10) { bottom: 72%;  animation-delay: 0.35s; font-size: 1.8rem; }
+    .flame:nth-child(11) { bottom: 80%;  animation-delay: 0.08s; font-size: 1.5rem; }
+    .flame:nth-child(12) { bottom: 88%;  animation-delay: 0.26s; font-size: 1.2rem; }
+
+    /* ─── FLASH ROUGE ─── */
+    .damage-overlay {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 500;
+    }
+    .damage-overlay.hit {
+      animation: damageFlash 0.7s ease forwards;
+    }
+    @keyframes damageFlash {
+      0%   { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+      15%  { box-shadow: inset 0 0 80px 60px rgba(192,40,40,0.65); }
+      40%  { box-shadow: inset 0 0 80px 50px rgba(192,40,40,0.45); }
+      100% { box-shadow: inset 0 0 80px 40px rgba(192,40,40,0.0); }
+    }
+
+    /* ─── TREMBLEMENT ─── */
+    @keyframes screenShake {
+      0%,100% { transform: translate(0,0) rotate(0deg); }
+      10%     { transform: translate(-6px,-3px) rotate(-0.5deg); }
+      25%     { transform: translate(5px,4px) rotate(0.5deg); }
+      40%     { transform: translate(-4px,2px) rotate(-0.3deg); }
+      55%     { transform: translate(4px,-3px) rotate(0.3deg); }
+      70%     { transform: translate(-2px,2px) rotate(-0.2deg); }
+      85%     { transform: translate(2px,-1px) rotate(0.1deg); }
+    }
+    body.shake .page {
+      animation: screenShake 0.55s cubic-bezier(0.36,0.07,0.19,0.97) both;
+    }
+
+    /* ─── FIN DE QUIZ ─── */
+    .end-screen {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      text-align: center;
+      display: none;
+    }
+
+    .end-screen.show { display: block; animation: fadeIn 0.8s ease both; }
+
+    .trophy-big { font-size: 5rem; margin-bottom: 24px; display: block; animation: trophydrop 0.8s cubic-bezier(0.34,1.56,0.64,1) both 0.2s; }
+
+    @keyframes trophydrop {
+      from { transform: scale(0) rotate(-15deg); opacity: 0; }
+      to   { transform: scale(1) rotate(0deg); opacity: 1; }
+    }
+
+    .end-title {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2rem, 6vw, 3.5rem);
+      font-weight: 900;
+      color: var(--bleu-pale);
+      margin-bottom: 12px;
+    }
+
+    .end-score {
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 300;
+      letter-spacing: 0.2em;
+      color: var(--gris);
+      margin-bottom: 40px;
+    }
+
+    .end-score strong {
+      font-weight: 500;
+      color: var(--or);
+      font-size: 1.4rem;
+    }
+
+    .end-message {
+      font-size: 1.15rem;
+      font-style: italic;
+      color: rgba(224,242,254,0.55);
+      line-height: 1.8;
+      max-width: 400px;
+      margin: 0 auto 44px;
+    }
+
+    /* ─── LEADERBOARD ─── */
+    .leaderboard-container {
+      width: 100%;
+      max-width: 620px;
+      padding: 0 20px;
+      display: none;
+      margin-top: 40px;
+      margin-bottom: 40px;
+    }
+
+    .leaderboard-container.show { display: block; }
+
+    .leaderboard-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.8rem;
+      font-weight: 900;
+      color: var(--bleu-pale);
+      margin-bottom: 30px;
+      text-align: center;
+    }
+
+    .leaderboard-table {
+      width: 100%;
+      background: var(--noir-clair);
+      border: 1px solid rgba(56,189,248,0.22);
+      overflow: hidden;
+    }
+
+    .leaderboard-row {
+      display: grid;
+      grid-template-columns: 50px 1fr 100px 120px;
+      border-bottom: 1px solid rgba(56,189,248,0.15);
+      padding: 16px 20px;
+      align-items: center;
+    }
+
+    .leaderboard-row:last-child { border-bottom: none; }
+
+    .leaderboard-row.header {
+      background: rgba(56,189,248,0.10);
+      font-weight: 600;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.75rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--bleu);
+    }
+
+    .leaderboard-rank {
+      font-weight: 700;
+      color: var(--or);
+      text-align: center;
+      font-family: 'Playfair Display', serif;
+      font-size: 1.2rem;
+    }
+
+    .leaderboard-name {
+      color: var(--creme);
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .leaderboard-score {
+      text-align: center;
+      color: var(--or-pale);
+      font-weight: 600;
+    }
+
+    .leaderboard-time {
+      text-align: right;
+      color: var(--bleu-clair);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.9rem;
+    }
+
+    .restart-btn {
+      background: var(--or);
+      color: var(--noir);
+      border: none;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.8rem;
+      font-weight: 600;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      padding: 16px 40px;
+      cursor: pointer;
+      transition: background 0.3s ease;
+      display: inline-block;
+      margin-top: 20px;
+    }
+    .restart-btn:hover { background: var(--or-clair); }
+
+    /* ─── CONFETTI STARS ─── */
+    .star-burst {
+      position: fixed;
+      pointer-events: none;
+      z-index: 1000;
+      font-size: 1.2rem;
+      animation: starfly 1.4s ease forwards;
+    }
+
+    @keyframes starfly {
+      0%   { transform: translate(0,0) scale(1) rotate(0deg); opacity: 1; }
+      100% { transform: translate(var(--dx), var(--dy)) scale(0.3) rotate(360deg); opacity: 0; }
+    }
+
+    /* ─── RESPONSIVE ─── */
+    @media (max-width: 500px) {
+      .question-card { padding: 24px 20px; }
+      .input-row { flex-direction: column; }
+      .submit-btn { width: 100%; }
+      .score-bar { gap: 16px; }
+      .mode-buttons { gap: 10px; }
+      .leaderboard-row { grid-template-columns: 40px 1fr 80px 100px; font-size: 0.9rem; }
+    }
+
+    /* ─── MODE ENTRAÎNEMENT ─── */
+    .training-screen {
+      display: none;
+      width: 100%;
+      max-width: 820px;
+      padding: 0 20px 60px;
+      animation: fadeIn 0.5s ease both;
+    }
+    .training-screen.show { display: block; }
+
+    .training-header {
+      text-align: center;
+      padding: 50px 0 20px;
+    }
+
+    .training-subtitle {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      color: rgba(224,242,254,0.45);
+      margin-top: 10px;
+    }
+
+    .training-controls {
+      margin: 24px 0 20px;
+    }
+
+    .training-search {
+      width: 100%;
+      background: rgba(0,0,0,0.4);
+      border: 1px solid rgba(56,189,248,0.35);
+      color: var(--creme);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      font-style: italic;
+      padding: 14px 18px;
+      outline: none;
+      transition: border-color 0.3s ease;
+      border-radius: 2px;
+    }
+    .training-search::placeholder { color: rgba(224,242,254,0.25); font-style: italic; }
+    .training-search:focus { border-color: var(--or); }
+
+    .training-table-wrap {
+      background: var(--noir-clair);
+      border: 1px solid rgba(56,189,248,0.22);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .training-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    .training-table thead tr {
+      background: rgba(56,189,248,0.12);
+    }
+
+    .training-table th {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      font-weight: 500;
+      letter-spacing: 0.3em;
+      text-transform: uppercase;
+      color: var(--bleu);
+      padding: 14px 20px;
+      text-align: left;
+      border-bottom: 1px solid rgba(56,189,248,0.22);
+    }
+
+    .training-table td {
+      padding: 13px 20px;
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      vertical-align: top;
+    }
+
+    .training-table tr:last-child td { border-bottom: none; }
+
+    .training-table tr:hover td { background: rgba(56,189,248,0.06); }
+
+    .training-num {
+      font-family: 'Playfair Display', serif;
+      font-weight: 700;
+      font-size: 1.05rem;
+      color: var(--bleu-pale);
+      width: 28%;
+    }
+
+    .training-name {
+      color: var(--or-pale);
+      width: 24%;
+      font-weight: 600;
+    }
+
+    .training-note {
+      color: rgba(224,242,254,0.55);
+      font-style: italic;
+      font-size: 0.95rem;
+      line-height: 1.5;
+    }
+
+    .training-note:empty::before {
+      content: '—';
+      color: rgba(224,242,254,0.18);
+      font-style: normal;
+    }
+
+    .training-empty {
+      text-align: center;
+      color: rgba(224,242,254,0.3);
+      font-style: italic;
+      padding: 30px !important;
+    }
+
+    @media (max-width: 600px) {
+      .training-table th,
+      .training-table td { padding: 10px 12px; font-size: 0.95rem; }
+      .training-num { width: 35%; }
+      .training-name { width: 30%; }
+      .training-note { font-size: 0.85rem; }
+    }
+
+    /* ─── BADGE UTILISATEUR ─── */
+    .lq-user-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 14px;
+      background: rgba(56,189,248,0.10);
+      border: 1px solid rgba(56,189,248,0.30);
+      color: var(--bleu-pale);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      cursor: pointer;
+      border-radius: 2px;
+      transition: all 0.3s ease;
+    }
+    .lq-user-badge:hover {
+      background: rgba(56,189,248,0.18);
+      border-color: var(--bleu);
+    }
+    .lq-user-badge .dot {
+      width: 6px; height: 6px;
+      background: var(--or);
+      border-radius: 50%;
+      box-shadow: 0 0 8px var(--or);
+    }
+  </style>
+</head>
+<body>
+
+  <div class="spotlight"></div>
+  <div class="curtain-left"></div>
+  <div class="curtain-right"></div>
+
+  <div class="page">
+
+    <nav class="top-nav">
+      <a href="index.html" class="back-link">← Accueil</a>
+      <a href="index.html" class="nav-logo">LeQuiz</a>
+      <div class="progress-wrap">
+        <span class="progress-text" id="progressText">1 / 197</span>
+        <span id="userBadgeSlot"></span>
+      </div>
+    </nav>
+
+    <!-- Mode Selector -->
+    <div class="mode-selector" id="modeSelector">
+      <h1 class="mode-title">Choisissez votre mode</h1>
+      <div class="mode-buttons">
+        <button class="mode-btn" id="modeClassic">Mode Classique</button>
+        <button class="mode-btn" id="mode20">Mode 20 Questions</button>
+        <button class="mode-btn" id="modeTraining">📖 Mode Entraînement</button>
+      </div>
+      <div id="leaderboardPreview"></div>
+    </div>
+
+    <!-- Mode Entraînement -->
+    <div class="training-screen" id="trainingScreen">
+      <div class="training-header">
+        <p class="quiz-category">✦ Géographie ✦</p>
+        <h1 class="quiz-title">Les capitales du monde</h1>
+        <p class="training-subtitle">Consultez la liste complète pour vous entraîner</p>
+      </div>
+      <div class="training-controls">
+        <input type="text" class="training-search" id="trainingSearch" placeholder="Rechercher un pays, une capitale ou une note…" autocomplete="off" />
+      </div>
+      <div class="training-table-wrap">
+        <table class="training-table" id="trainingTable">
+          <thead>
+            <tr><th>Pays</th><th>Capitale</th><th>Note</th></tr>
+          </thead>
+          <tbody id="trainingBody"></tbody>
+        </table>
+      </div>
+      <button class="restart-btn" id="trainingBack" style="margin:30px auto;display:block;">← Retour au menu</button>
+    </div>
+
+    <!-- En-tête quiz -->
+    <div class="quiz-header" id="quizHeader">
+      <p class="quiz-category">✦ Géographie ✦</p>
+      <h1 class="quiz-title">Les capitales du monde</h1>
+      <div class="score-bar">
+        <div class="score-item">
+          <div class="score-val" id="scoreCorrect">0</div>
+          <div class="score-label">Correct</div>
+        </div>
+        <div class="score-sep"></div>
+        <div class="score-item">
+          <div class="score-val wrong" id="scoreWrong">0</div>
+          <div class="score-label">Raté</div>
+        </div>
+        <div class="score-sep"></div>
+        <div class="score-item">
+          <div class="score-val skip" id="scoreSkip">0</div>
+          <div class="score-label">Passé</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Barre de progression -->
+    <div class="progress-outer" id="progressOuter" style="max-width:620px;width:calc(100% - 40px);display:none;">
+      <div class="progress-inner" id="progressBar" style="width:1%"></div>
+    </div>
+
+    <!-- Scène du quiz -->
+    <div class="quiz-stage" id="quizStage">
+      <div class="question-card">
+        <p class="q-year-label">Quelle capitale ?</p>
+        <div class="q-year" id="qYear">—</div>
+        <p class="q-question">Quelle est la capitale de ce pays ?</p>
+        <div class="card-timer" id="timerDisplay" style="display:none;">
+          <span class="card-timer-icon">⏱</span>
+          <span class="card-timer-value" id="timerValue">00:00</span>
+        </div>
+        <div class="input-row">
+          <input
+            type="text"
+            class="answer-input"
+            id="answerInput"
+            placeholder="Votre réponse…"
+            autocomplete="off"
+            spellcheck="false"
+          />
+          <button class="submit-btn" id="submitBtn">OK</button>
+        </div>
+        <div class="feedback" id="feedback">
+          <span class="feedback-icon"></span>
+          <div class="feedback-main">
+            <span id="feedbackText"></span>
+            <span class="feedback-note" id="feedbackNote" style="display:none;"></span>
+          </div>
+        </div>
+        <div class="action-row">
+          <button class="skip-btn" id="skipBtn">Passer →</button>
+          <button class="next-btn" id="nextBtn" style="display:none">Question suivante →</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Écran de fin -->
+    <div class="end-screen" id="endScreen">
+      <span class="trophy-big">🌍</span>
+      <h2 class="end-title">Bravo !</h2>
+      <p class="end-score">Score final&nbsp;: <strong id="finalScore">—</strong></p>
+      <p class="end-message" id="endMessage">Vous avez fait le tour du monde ! Toutes les capitales n'ont plus de secret pour vous.</p>
+      <button class="restart-btn" id="restartBtn">Rejouer depuis le début</button>
+    </div>
+
+    <!-- Leaderboard Mode 20 Questions -->
+    <div class="leaderboard-container" id="leaderboardContainer">
+      <h2 class="leaderboard-title" id="leaderboardTitle">Classement</h2>
+      <div class="leaderboard-table" id="leaderboardTable"></div>
+      <button class="restart-btn" id="restartBtn20">Rejouer depuis le début</button>
+    </div>
+
+  </div>
+
+  <!-- Flammes série -->
+  <div class="flame-overlay left"  id="flameLeft">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+  <div class="flame-overlay right" id="flameRight">
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+    <span class="flame">🔥</span><span class="flame">🔥</span><span class="flame">🔥</span>
+  </div>
+
+  <!-- Flash dégât -->
+  <div class="damage-overlay" id="damageOverlay"></div>
+
+  <script type="module">
+  import {
+    supabase, showAuthModal, getCurrentUser, signOut,
+    submitScore, fetchLeaderboard, renderLeaderboardPreview
+  } from './lequiz-auth.js';
+
+  const QUIZ_ID = 'capitales';
+  // ─── DONNÉES ─────────────────────────────────────────────────────────
+  // year = pays, answer = capitale officielle (ou de facto si pas d'officielle), note = précision
+  const QUESTIONS = [
+    { year: "Émirats arabes unis", answer: "Abou Dabi", note: "" },
+    { year: "Nigeria", answer: "Abuja", note: "Abuja est la capitale depuis 1991, en remplacement de Lagos." },
+    { year: "Ghana", answer: "Accra", note: "" },
+    { year: "Turkménistan", answer: "Achgabat", note: "" },
+    { year: "Éthiopie", answer: "Addis-Abeba", note: "" },
+    { year: "Yémen", answer: "Sanaa", note: "Capitale contestée. Sanaa sert de capitale au Conseil politique suprême ; Aden sert de capitale au Conseil de transition du Sud. Les deux factions ont participé à la guerre civile." },
+    { year: "Algérie", answer: "Alger", note: "" },
+    { year: "Niue", answer: "Alofi", note: "" },
+    { year: "Jordanie", answer: "Amman", note: "" },
+    { year: "Pays-Bas", answer: "Amsterdam", note: "Amsterdam est la capitale officielle (constitution du royaume). Le gouvernement néerlandais, le roi, les ministères, la magistrature et les missions diplomatiques sont néanmoins situés à La Haye." },
+    { year: "Andorre", answer: "Andorre-la-Vieille", note: "" },
+    { year: "Turquie", answer: "Ankara", note: "" },
+    { year: "Madagascar", answer: "Antananarivo", note: "Aussi appelée Tananarive." },
+    { year: "Samoa", answer: "Apia", note: "" },
+    { year: "Érythrée", answer: "Asmara", note: "" },
+    { year: "Kazakhstan", answer: "Astana", note: "Précédemment nommée « Akmola » jusqu'en 1998, puis « Nour-Soultan » de 2019 à 2022. Almaty était la capitale de 1991 à 1997." },
+    { year: "Paraguay", answer: "Asuncion", note: "" },
+    { year: "Grèce", answer: "Athènes", note: "" },
+    { year: "Îles Cook", answer: "Avarua", note: "" },
+    { year: "Irak", answer: "Bagdad", note: "" },
+    { year: "Azerbaïdjan", answer: "Bakou", note: "" },
+    { year: "Mali", answer: "Bamako", note: "" },
+    { year: "Brunei", answer: "Bandar Seri Begawan", note: "" },
+    { year: "Thaïlande", answer: "Bangkok", note: "" },
+    { year: "République centrafricaine", answer: "Bangui", note: "" },
+    { year: "Gambie", answer: "Banjul", note: "" },
+    { year: "Saint-Christophe-et-Niévès", answer: "Basseterre", note: "" },
+    { year: "Serbie", answer: "Belgrade", note: "" },
+    { year: "Belize", answer: "Belmopan", note: "" },
+    { year: "Allemagne", answer: "Berlin", note: "Bonn était la capitale d'Allemagne de l'Ouest et est demeurée le siège du gouvernement de l'Allemagne réunifiée jusqu'en 1999." },
+    { year: "Suisse", answer: "Berne", note: "La Suisse n'a aucune capitale officielle ; Berne est la ville fédérale, c'est-à-dire le siège du gouvernement fédéral." },
+    { year: "Liban", answer: "Beyrouth", note: "" },
+    { year: "Kirghizistan", answer: "Bichkek", note: "" },
+    { year: "Guinée-Bissau", answer: "Bissau", note: "" },
+    { year: "Afrique du Sud", answer: "Pretoria", note: "L'Afrique du Sud compte trois capitales : Pretoria est la capitale administrative et le siège du gouvernement, Le Cap est le siège du Parlement et Bloemfontein la capitale judiciaire." },
+    { year: "Colombie", answer: "Bogota", note: "" },
+    { year: "Brésil", answer: "Brasilia", note: "Rio de Janeiro était la capitale jusqu'en 1960. Belém a été temporairement capitale en novembre 2025 à l'occasion de la COP 30." },
+    { year: "Slovaquie", answer: "Bratislava", note: "" },
+    { year: "République du Congo", answer: "Brazzaville", note: "" },
+    { year: "Barbade", answer: "Bridgetown", note: "" },
+    { year: "Belgique", answer: "Bruxelles", note: "" },
+    { year: "Roumanie", answer: "Bucarest", note: "" },
+    { year: "Hongrie", answer: "Budapest", note: "" },
+    { year: "Argentine", answer: "Buenos Aires", note: "" },
+    { year: "Burundi", answer: "Gitega", note: "Gitega est la capitale officielle depuis 2018, en remplacement de Bujumbura. Bujumbura conserve néanmoins certaines institutions et missions diplomatiques." },
+    { year: "Égypte", answer: "Le Caire", note: "En 2023, une nouvelle capitale est en construction." },
+    { year: "Australie", answer: "Canberra", note: "" },
+    { year: "Venezuela", answer: "Caracas", note: "" },
+    { year: "Sainte-Lucie", answer: "Castries", note: "" },
+    { year: "Monténégro", answer: "Podgorica", note: "Podgorica est la capitale administrative ; Cetinje est le siège du président." },
+    { year: "Moldavie", answer: "Chisinau", note: "" },
+    { year: "Guinée équatoriale", answer: "Ciudad de la Paz", note: "Malabo a été capitale jusqu'en janvier 2026." },
+    { year: "Sri Lanka", answer: "Sri Jayawardenapura Kotte", note: "Capitale officielle et législative depuis les années 1980, en remplacement de Colombo. Colombo conserve toujours plusieurs institutions gouvernementales importantes et reste la capitale exécutive et judiciaire de facto." },
+    { year: "Honduras", answer: "Tegucigalpa", note: "La constitution du Honduras désigne Comayagüela comme co-capitale avec Tegucigalpa. Depuis 1937, les deux villes ne sont plus que deux localités de la municipalité du Distrito Central." },
+    { year: "Guinée", answer: "Conakry", note: "" },
+    { year: "Danemark", answer: "Copenhague", note: "" },
+    { year: "Bénin", answer: "Porto-Novo", note: "Porto-Novo est la capitale constitutionnelle ; Cotonou est le siège du gouvernement et des ambassades." },
+    { year: "Sénégal", answer: "Dakar", note: "" },
+    { year: "Syrie", answer: "Damas", note: "" },
+    { year: "Bangladesh", answer: "Dacca", note: "" },
+    { year: "Tanzanie", answer: "Dodoma", note: "Dodoma est la capitale officielle et législative depuis 1996. Dar es Salaam, l'ancienne capitale et la plus grande ville du pays, continue toutefois à héberger de facto le gouvernement, la présidence, les ministères, la magistrature et les missions diplomatiques." },
+    { year: "Timor oriental", answer: "Dili", note: "" },
+    { year: "Djibouti", answer: "Djibouti", note: "" },
+    { year: "Soudan du Sud", answer: "Djouba", note: "" },
+    { year: "Qatar", answer: "Doha", note: "" },
+    { year: "Tadjikistan", answer: "Douchanbé", note: "" },
+    { year: "Irlande", answer: "Dublin", note: "" },
+    { year: "Arménie", answer: "Erevan", note: "" },
+    { year: "Sierra Leone", answer: "Freetown", note: "" },
+    { year: "Tuvalu", answer: "Funafuti", note: "Vaiaku est le centre administratif de l'atoll de Funafuti." },
+    { year: "Botswana", answer: "Gaborone", note: "" },
+    { year: "Guyana", answer: "Georgetown", note: "" },
+    { year: "Guatemala", answer: "Guatemala", note: "" },
+    { year: "Vietnam", answer: "Hanoï", note: "" },
+    { year: "Zimbabwe", answer: "Harare", note: "" },
+    { year: "Cuba", answer: "La Havane", note: "" },
+    { year: "Finlande", answer: "Helsinki", note: "" },
+    { year: "Îles Salomon", answer: "Honiara", note: "" },
+    { year: "Pakistan", answer: "Islamabad", note: "Islamabad est la capitale depuis les années 1960, en remplacement de Rawalpindi, laquelle avait déjà remplacé Karachi en 1958." },
+    { year: "Indonésie", answer: "Nusantara", note: "Nusantara est la capitale officielle (de jure) depuis le 17 août 2024, en remplacement de Jakarta. Malgré le transfert de la capitale, Jakarta continue d'héberger de nombreuses administrations pendant une phase de transition." },
+    { year: "Israël", answer: "Jérusalem", note: "Israël considère Jérusalem comme sa capitale depuis 1949, position fortement contestée internationalement. La plupart des ambassades sont situées à Tel Aviv-Jaffa, à l'exception notable de celle des États-Unis." },
+    { year: "Palestine", answer: "Jérusalem", note: "Jérusalem est la capitale proclamée de l'État de Palestine (loi fondamentale de 1997). Le siège administratif de facto du pouvoir palestinien est provisoirement situé à Ramallah." },
+    { year: "Afghanistan", answer: "Kaboul", note: "" },
+    { year: "Ouganda", answer: "Kampala", note: "" },
+    { year: "Népal", answer: "Katmandou", note: "" },
+    { year: "Soudan", answer: "Khartoum", note: "" },
+    { year: "Ukraine", answer: "Kiev", note: "" },
+    { year: "Rwanda", answer: "Kigali", note: "" },
+    { year: "Jamaïque", answer: "Kingston", note: "" },
+    { year: "Saint-Vincent-et-les-Grenadines", answer: "Kingstown", note: "" },
+    { year: "République démocratique du Congo", answer: "Kinshasa", note: "" },
+    { year: "Palaos", answer: "Melekeok", note: "Melekeok, dont le lieu-dit Ngerulmud accueille le Capitole, est la capitale depuis le 7 octobre 2006, en remplacement de Koror." },
+    { year: "Koweït", answer: "Koweït", note: "" },
+    { year: "Malaisie", answer: "Kuala Lumpur", note: "Kuala Lumpur est la capitale officielle et accueille le parlement et la résidence royale. Putrajaya, située à 20 km, est la nouvelle capitale administrative." },
+    { year: "Gabon", answer: "Libreville", note: "" },
+    { year: "Malawi", answer: "Lilongwe", note: "" },
+    { year: "Pérou", answer: "Lima", note: "Cuzco est désignée « capitale historique » dans l'article 49 de la constitution. Arequipa est surnommée « capitale judiciaire » car elle abrite le siège du tribunal constitutionnel." },
+    { year: "Portugal", answer: "Lisbonne", note: "" },
+    { year: "Slovénie", answer: "Ljubljana", note: "" },
+    { year: "Togo", answer: "Lomé", note: "" },
+    { year: "Royaume-Uni", answer: "Londres", note: "Avant les Actes d'Union de 1707, Londres était la capitale de l'Angleterre seulement et Édimbourg la capitale du royaume d'Écosse. Le Royaume-Uni comprend l'Angleterre (Londres), l'Écosse (Édimbourg), le Pays de Galles (Cardiff) et l'Irlande du Nord (Belfast)." },
+    { year: "Angola", answer: "Luanda", note: "" },
+    { year: "Zambie", answer: "Lusaka", note: "" },
+    { year: "Luxembourg", answer: "Luxembourg", note: "" },
+    { year: "Espagne", answer: "Madrid", note: "" },
+    { year: "Îles Marshall", answer: "Majuro", note: "Delap-Uliga-Darrit est la principale localité de l'atoll de Majuro. Majuro est une municipalité." },
+    { year: "Maldives", answer: "Malé", note: "" },
+    { year: "Nicaragua", answer: "Managua", note: "" },
+    { year: "Bahreïn", answer: "Manama", note: "" },
+    { year: "Philippines", answer: "Manille", note: "" },
+    { year: "Mozambique", answer: "Maputo", note: "" },
+    { year: "Oman", answer: "Mascate", note: "" },
+    { year: "Lesotho", answer: "Maseru", note: "" },
+    { year: "Eswatini", answer: "Mbabane", note: "" },
+    { year: "Mexique", answer: "Mexico", note: "" },
+    { year: "Biélorussie", answer: "Minsk", note: "" },
+    { year: "Somalie", answer: "Mogadiscio", note: "" },
+    { year: "Monaco", answer: "Monaco", note: "Cité-État : le pays est sa propre capitale." },
+    { year: "Liberia", answer: "Monrovia", note: "" },
+    { year: "Uruguay", answer: "Montevideo", note: "" },
+    { year: "Comores", answer: "Moroni", note: "" },
+    { year: "Russie", answer: "Moscou", note: "" },
+    { year: "Kenya", answer: "Nairobi", note: "" },
+    { year: "Bahamas", answer: "Nassau", note: "" },
+    { year: "Birmanie", answer: "Naypyidaw", note: "Naypyidaw est la capitale officielle, en remplacement de Rangoun, depuis le 7 novembre 2005." },
+    { year: "Tchad", answer: "N'Djaména", note: "" },
+    { year: "Inde", answer: "New Delhi", note: "" },
+    { year: "Niger", answer: "Niamey", note: "" },
+    { year: "Chypre", answer: "Nicosie", note: "" },
+    { year: "Mauritanie", answer: "Nouakchott", note: "" },
+    { year: "Tonga", answer: "Nukuʻalofa", note: "" },
+    { year: "Norvège", answer: "Oslo", note: "" },
+    { year: "Canada", answer: "Ottawa", note: "" },
+    { year: "Burkina Faso", answer: "Ouagadougou", note: "" },
+    { year: "Mongolie", answer: "Oulan-Bator", note: "" },
+    { year: "États fédérés de Micronésie", answer: "Palikir", note: "Kolonia était la capitale jusqu'en 1989 ; les ambassades d'Australie, Chine, États-Unis et Japon y sont toujours situées." },
+    { year: "Panama", answer: "Panama", note: "" },
+    { year: "Suriname", answer: "Paramaribo", note: "" },
+    { year: "France", answer: "Paris", note: "" },
+    { year: "Bolivie", answer: "Sucre", note: "Sucre est la capitale constitutionnelle ; La Paz est le siège du gouvernement et des ambassades." },
+    { year: "Chine", answer: "Pékin", note: "" },
+    { year: "Cambodge", answer: "Phnom Penh", note: "" },
+    { year: "Papouasie-Nouvelle-Guinée", answer: "Port Moresby", note: "" },
+    { year: "Haïti", answer: "Port-au-Prince", note: "" },
+    { year: "Trinité-et-Tobago", answer: "Port-d'Espagne", note: "" },
+    { year: "Maurice", answer: "Port-Louis", note: "" },
+    { year: "Vanuatu", answer: "Port-Vila", note: "" },
+    { year: "République tchèque", answer: "Prague", note: "" },
+    { year: "Cap-Vert", answer: "Praia", note: "" },
+    { year: "Corée du Nord", answer: "Pyongyang", note: "" },
+    { year: "Équateur", answer: "Quito", note: "" },
+    { year: "Maroc", answer: "Rabat", note: "" },
+    { year: "Islande", answer: "Reykjavik", note: "" },
+    { year: "Lettonie", answer: "Riga", note: "" },
+    { year: "Arabie saoudite", answer: "Riyad", note: "" },
+    { year: "Italie", answer: "Rome", note: "" },
+    { year: "Dominique", answer: "Roseau", note: "" },
+    { year: "Antigua-et-Barbuda", answer: "Saint John's", note: "" },
+    { year: "République dominicaine", answer: "Saint-Domingue", note: "" },
+    { year: "Grenade", answer: "Saint-Georges", note: "" },
+    { year: "Saint-Marin", answer: "Saint-Marin", note: "" },
+    { year: "Costa Rica", answer: "San José", note: "" },
+    { year: "Salvador", answer: "San Salvador", note: "" },
+    { year: "Chili", answer: "Santiago", note: "Santiago est la capitale officielle. Le Congrès national est situé à Valparaíso, le reste des institutions à Santiago." },
+    { year: "Sao Tomé-et-Principe", answer: "São Tomé", note: "" },
+    { year: "Bosnie-Herzégovine", answer: "Sarajevo", note: "" },
+    { year: "Corée du Sud", answer: "Séoul", note: "Certaines fonctions gouvernementales ont été transférées à Sejong en 2012 ; Séoul héberge néanmoins la quasi-totalité des institutions." },
+    { year: "Singapour", answer: "Singapour", note: "Cité-État : le pays est sa propre capitale." },
+    { year: "Macédoine du Nord", answer: "Skopje", note: "" },
+    { year: "Bulgarie", answer: "Sofia", note: "" },
+    { year: "Suède", answer: "Stockholm", note: "" },
+    { year: "Fidji", answer: "Suva", note: "" },
+    { year: "Ouzbékistan", answer: "Tachkent", note: "" },
+    { year: "Estonie", answer: "Tallinn", note: "" },
+    { year: "Kiribati", answer: "Tarawa-Sud", note: "Tarawa-Sud est une communauté urbaine de l'atoll de Tarawa. Bairiki, un lieu-dit de Tarawa-Sud, accueille de nombreuses institutions et ambassades." },
+    { year: "Géorgie", answer: "Tbilissi", note: "" },
+    { year: "Iran", answer: "Téhéran", note: "" },
+    { year: "Bhoutan", answer: "Thimphou", note: "" },
+    { year: "Albanie", answer: "Tirana", note: "" },
+    { year: "Japon", answer: "Tokyo", note: "" },
+    { year: "Libye", answer: "Tripoli", note: "" },
+    { year: "Tunisie", answer: "Tunis", note: "" },
+    { year: "Liechtenstein", answer: "Vaduz", note: "" },
+    { year: "Malte", answer: "La Valette", note: "" },
+    { year: "Pologne", answer: "Varsovie", note: "" },
+    { year: "Vatican", answer: "Vatican", note: "Cité-État : le pays est sa propre capitale." },
+    { year: "Seychelles", answer: "Victoria", note: "" },
+    { year: "Autriche", answer: "Vienne", note: "" },
+    { year: "Laos", answer: "Vientiane", note: "" },
+    { year: "Lituanie", answer: "Vilnius", note: "" },
+    { year: "États-Unis", answer: "Washington", note: "" },
+    { year: "Nouvelle-Zélande", answer: "Wellington", note: "" },
+    { year: "Namibie", answer: "Windhoek", note: "" },
+    { year: "Côte d'Ivoire", answer: "Yamoussoukro", note: "Selon l'IGN, Yamoussoukro est la capitale politique depuis 1983 ; l'ancienne capitale Abidjan demeure le siège des ambassades et compte toujours de nombreux bâtiments officiels." },
+    { year: "Cameroun", answer: "Yaoundé", note: "" },
+    { year: "Nauru", answer: "Yaren", note: "Nauru ne compte aucune capitale officielle ; les institutions sont néanmoins situées à Yaren." },
+    { year: "Croatie", answer: "Zagreb", note: "" },
+  ];
+
+  // ─── NORMALISATION ─────────────────────────────────────────────────────
+  function normalize(str) {
+    return str
+      .normalize('NFD').replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/['']/g, "'")
+      .replace(/[^a-z0-9 ']/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function checkAnswer(input, expected) {
+    const n = normalize(input);
+    const e = normalize(expected);
+    if (n === e) return true;
+    if (e.includes(n) && n.length >= Math.floor(e.length * 0.75)) return true;
+    if (n.includes(e)) return true;
+    if (levenshtein(n, e) <= Math.floor(e.length * 0.15)) return true;
+    return false;
+  }
+
+  function levenshtein(a, b) {
+    const m = a.length, n = b.length;
+    const dp = Array.from({ length: m+1 }, (_, i) => Array.from({ length: n+1 }, (_, j) => i === 0 ? j : j === 0 ? i : 0));
+    for (let i = 1; i <= m; i++)
+      for (let j = 1; j <= n; j++)
+        dp[i][j] = a[i-1] === b[j-1] ? dp[i-1][j-1] : 1 + Math.min(dp[i-1][j], dp[i][j-1], dp[i-1][j-1]);
+    return dp[m][n];
+  }
+
+  // ─── RANDOMIZATION ─────────────────────────────────────────────────────
+  function shuffleArray(array) {
+    for (let i = array.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [array[i], array[j]] = [array[j], array[i]];
+    }
+  }
+
+  // ─── ÉTAT ──────────────────────────────────────────────────────────
+  let gameMode = null;
+  let current = 0;
+  let scoreCorrect = 0, scoreWrong = 0, scoreSkip = 0;
+  let answered = false;
+  let timerInterval = null;
+  let elapsedSeconds = 0;
+  let streak = 0;
+  let answerHistory = [];
+  let leaderboard = [];
+  let currentUser = null;
+
+  // ─── DOM ──────────────────────────────────────────────────────────
+  const modeSelector = document.getElementById('modeSelector');
+  const modeClassicBtn = document.getElementById('modeClassic');
+  const mode20Btn = document.getElementById('mode20');
+  const qYear       = document.getElementById('qYear');
+  const answerInput = document.getElementById('answerInput');
+  const submitBtn   = document.getElementById('submitBtn');
+  const skipBtn     = document.getElementById('skipBtn');
+  const nextBtn     = document.getElementById('nextBtn');
+  const feedback    = document.getElementById('feedback');
+  const feedbackText= document.getElementById('feedbackText');
+  const feedbackNote= document.getElementById('feedbackNote');
+  const progressText= document.getElementById('progressText');
+  const progressBar = document.getElementById('progressBar');
+  const progressOuter = document.getElementById('progressOuter');
+  const timerDisplay = document.getElementById('timerDisplay');
+  const sCorrect    = document.getElementById('scoreCorrect');
+  const sWrong      = document.getElementById('scoreWrong');
+  const sSkip       = document.getElementById('scoreSkip');
+  const quizStage   = document.getElementById('quizStage');
+  const quizHeader  = document.getElementById('quizHeader');
+  const endScreen   = document.getElementById('endScreen');
+  const leaderboardContainer = document.getElementById('leaderboardContainer');
+  const leaderboardTable = document.getElementById('leaderboardTable');
+  const finalScore  = document.getElementById('finalScore');
+  const endMessage  = document.getElementById('endMessage');
+  const restartBtn  = document.getElementById('restartBtn');
+  const restartBtn20 = document.getElementById('restartBtn20');
+  const flameLeft   = document.getElementById('flameLeft');
+  const flameRight  = document.getElementById('flameRight');
+  const damageOverlay = document.getElementById('damageOverlay');
+
+  // ─── TIMER ─────────────────────────────────────────────────────────
+  function startTimer() {
+    elapsedSeconds = 0;
+    timerDisplay.style.display = '';
+    updateTimerDisplay();
+    timerInterval = setInterval(() => {
+      elapsedSeconds++;
+      updateTimerDisplay();
+    }, 1000);
+  }
+
+  function stopTimer() {
+    if (timerInterval) {
+      clearInterval(timerInterval);
+      timerInterval = null;
+    }
+  }
+
+  function updateTimerDisplay() {
+    const mins = Math.floor(elapsedSeconds / 60);
+    const secs = elapsedSeconds % 60;
+    const timeStr = `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+    const valueEl = document.getElementById('timerValue');
+    if (valueEl) {
+      valueEl.textContent = timeStr;
+      valueEl.className = 'card-timer-value' +
+        (elapsedSeconds >= 90 ? ' danger' : elapsedSeconds >= 60 ? ' warning' : '');
+    }
+  }
+
+  function formatTime(seconds) {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+  }
+
+  // ─── BARRE DE PROGRESSION COLORÉE ─────────────────────────────────
+  function rebuildProgressBar() {
+    const total = QUESTIONS.length;
+    progressOuter.innerHTML = '<div class="progress-inner" id="progressBar" style="display:none"></div>';
+    for (let i = 0; i < total; i++) {
+      const seg = document.createElement('div');
+      seg.className = 'progress-segment ' + (answerHistory[i] || 'pending');
+      if (i < answerHistory.length) seg.style.animationDuration = '0s';
+      progressOuter.appendChild(seg);
+    }
+  }
+
+  function updateLastSegment(type) {
+    const segs = progressOuter.querySelectorAll('.progress-segment');
+    const idx = answerHistory.length - 1;
+    if (segs[idx]) {
+      segs[idx].className = 'progress-segment ' + type;
+      segs[idx].style.animation = 'none';
+      void segs[idx].offsetWidth;
+      segs[idx].style.animation = '';
+    }
+  }
+
+  // ─── FLAMMES ───────────────────────────────────────────────────────
+  function updateFlames() {
+    if (streak >= 5) {
+      flameLeft.classList.add('active');
+      flameRight.classList.add('active');
+    } else {
+      flameLeft.classList.remove('active');
+      flameRight.classList.remove('active');
+    }
+  }
+
+  // ─── EFFET DÉGÂT ───────────────────────────────────────────────────
+  function triggerDamage() {
+    damageOverlay.classList.remove('hit');
+    void damageOverlay.offsetWidth;
+    damageOverlay.classList.add('hit');
+    damageOverlay.addEventListener('animationend', () => {
+      damageOverlay.classList.remove('hit');
+    }, { once: true });
+
+    document.body.classList.remove('shake');
+    void document.body.offsetWidth;
+    document.body.classList.add('shake');
+    document.body.addEventListener('animationend', () => {
+      document.body.classList.remove('shake');
+    }, { once: true });
+  }
+
+  // ─── MODE SELECTION ─────────────────────────────────────────────────
+  modeClassicBtn.addEventListener('click', () => {
+    gameMode = 'classic';
+    initClassicMode();
+  });
+
+  mode20Btn.addEventListener('click', async () => {
+    if (!currentUser) {
+      showAuthModal(async () => {
+        currentUser = await getCurrentUser();
+        renderUserBadge();
+        gameMode = '20questions';
+        init20QuestionsMode();
+      });
+      return;
+    }
+    gameMode = '20questions';
+    init20QuestionsMode();
+  });
+
+  function initClassicMode() {
+    modeSelector.style.display = 'none';
+    quizHeader.classList.add('show');
+    progressOuter.style.display = '';
+    quizStage.classList.add('show');
+    timerDisplay.style.display = 'none';
+
+    const allQuestions = [...QUESTIONS];
+    shuffleArray(allQuestions);
+    QUESTIONS.length = 0;
+    QUESTIONS.push(...allQuestions);
+
+    current = 0;
+    scoreCorrect = 0;
+    scoreWrong = 0;
+    scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
+    answered = false;
+    sCorrect.textContent = '0';
+    sWrong.textContent = '0';
+    sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
+    loadQuestion(0);
+  }
+
+  function init20QuestionsMode() {
+    modeSelector.style.display = 'none';
+    quizHeader.classList.add('show');
+    progressOuter.style.display = '';
+    quizStage.classList.add('show');
+
+    const allQuestions = [...QUESTIONS];
+    shuffleArray(allQuestions);
+    QUESTIONS.length = 0;
+    QUESTIONS.push(...allQuestions.slice(0, 20));
+
+    current = 0;
+    scoreCorrect = 0;
+    scoreWrong = 0;
+    scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
+    answered = false;
+    sCorrect.textContent = '0';
+    sWrong.textContent = '0';
+    sSkip.textContent = '0';
+    rebuildProgressBar();
+    updateFlames();
+
+    startTimer();
+    loadQuestion(0);
+  }
+
+  // ─── CHARGEMENT D'UNE QUESTION ─────────────────────────────────────────
+  function loadQuestion(idx) {
+    const q = QUESTIONS[idx];
+    answered = false;
+
+    qYear.textContent = q.year;
+    answerInput.value = '';
+    answerInput.className = 'answer-input';
+    answerInput.disabled = false;
+    answerInput.focus();
+    submitBtn.disabled = false;
+
+    feedback.className = 'feedback';
+    feedbackText.textContent = '';
+    feedback.querySelector('.feedback-icon').textContent = '';
+    feedbackNote.textContent = '';
+    feedbackNote.style.display = 'none';
+
+    nextBtn.style.display = 'none';
+    skipBtn.style.display = '';
+
+    progressText.textContent = `${idx + 1} / ${QUESTIONS.length}`;
+
+    quizStage.style.animation = 'none';
+    void quizStage.offsetWidth;
+    quizStage.style.animation = 'fadeIn 0.4s ease both';
+  }
+
+  // ─── AFFICHAGE NOTE ─────────────────────────────────────────────────
+  function showNoteIfPresent(note) {
+    if (note && note.trim()) {
+      feedbackNote.textContent = note;
+      feedbackNote.style.display = '';
+    } else {
+      feedbackNote.textContent = '';
+      feedbackNote.style.display = 'none';
+    }
+  }
+
+  // ─── VALIDATION ────────────────────────────────────────────────────────
+  function submit() {
+    if (answered) return;
+    const val = answerInput.value.trim();
+    if (!val) return;
+
+    answered = true;
+    submitBtn.disabled = true;
+    answerInput.disabled = true;
+    skipBtn.style.display = 'none';
+
+    const q = QUESTIONS[current];
+    const correct = checkAnswer(val, q.answer);
+
+    if (correct) {
+      scoreCorrect++;
+      sCorrect.textContent = scoreCorrect;
+      answerInput.classList.add('correct');
+      feedback.className = 'feedback correct show';
+      feedback.querySelector('.feedback-icon').textContent = '✦';
+      feedbackText.textContent = `Exact ! « ${q.answer} »`;
+      streak++;
+      answerHistory.push('correct');
+      updateLastSegment('correct');
+      updateFlames();
+      burstStars();
+    } else {
+      scoreWrong++;
+      sWrong.textContent = scoreWrong;
+      answerInput.classList.add('wrong');
+      feedback.className = 'feedback wrong show';
+      feedback.querySelector('.feedback-icon').textContent = '✗';
+      feedbackText.textContent = `La bonne réponse était : « ${q.answer} »`;
+      const hadStreak = streak >= 5;
+      streak = 0;
+      answerHistory.push('wrong');
+      updateLastSegment('wrong');
+      updateFlames();
+      if (hadStreak) triggerDamage();
+    }
+
+    showNoteIfPresent(q.note);
+
+    nextBtn.style.display = '';
+  }
+
+  // ─── PASSER ─────────────────────────────────────────────────────────
+  function skip() {
+    if (answered) return;
+    answered = true;
+    scoreSkip++;
+    sSkip.textContent = scoreSkip;
+    answerInput.disabled = true;
+    submitBtn.disabled = true;
+    skipBtn.style.display = 'none';
+    const q = QUESTIONS[current];
+    feedback.className = 'feedback skip show';
+    feedback.querySelector('.feedback-icon').textContent = '○';
+    feedbackText.textContent = `La réponse était : « ${q.answer} »`;
+    showNoteIfPresent(q.note);
+    const hadStreak = streak >= 5;
+    streak = 0;
+    answerHistory.push('skip');
+    updateLastSegment('skip');
+    updateFlames();
+    if (hadStreak) triggerDamage();
+    nextBtn.style.display = '';
+  }
+
+  // ─── SUIVANT ─────────────────────────────────────────────────────────
+  function next() {
+    current++;
+    if (current >= QUESTIONS.length) {
+      showEnd();
+    } else {
+      loadQuestion(current);
+    }
+  }
+
+  // ─── FIN ──────────────────────────────────────────────────────────
+  function showEnd() {
+    stopTimer();
+    quizStage.style.display = 'none';
+    progressOuter.style.display = 'none';
+
+    if (gameMode === 'classic') {
+      endScreen.classList.add('show');
+      progressText.textContent = `Terminé !`;
+      const pct = Math.round((scoreCorrect / QUESTIONS.length) * 100);
+      finalScore.textContent = `${scoreCorrect} / ${QUESTIONS.length} (${pct}%)`;
+      const msg =
+        pct >= 90 ? "Performance de légende. Aucun continent ne vous résiste." :
+        pct >= 70 ? "Excellent ! Votre connaissance du globe est solide." :
+        pct >= 50 ? "Bonne prestation. Quelques capitales restent à découvrir…" :
+        pct >= 30 ? "Il reste du chemin — mais le monde vous attend." :
+                    "Le tour du monde commence ici. À vos atlas !";
+      endMessage.textContent = msg;
+    } else {
+      showLeaderboard();
+    }
+  }
+
+  async function showLeaderboard() {
+    endScreen.style.display = 'none';
+    leaderboardContainer.classList.add('show');
+
+    leaderboardTable.innerHTML = '<div style="padding:40px;text-align:center;color:var(--or);font-style:italic;">Enregistrement de votre score…</div>';
+
+    try {
+      const result = await submitScore(QUIZ_ID, scoreCorrect, 20, elapsedSeconds);
+      leaderboard = await fetchLeaderboard(QUIZ_ID, 50);
+      renderLeaderboard(result);
+    } catch (err) {
+      leaderboardTable.innerHTML =
+        `<div style="padding:40px;text-align:center;color:#ffb4b4;font-style:italic;">
+           Erreur : ${err.message}<br>Votre score n'a pas pu être enregistré.
+         </div>`;
+    }
+  }
+
+  function renderLeaderboard(submitResult = null) {
+    let html = '';
+
+    if (submitResult) {
+      if (submitResult.inserted) {
+        html += '<div style="padding:14px 20px;margin-bottom:14px;background:rgba(45,212,191,0.12);border-left:2px solid var(--or);color:var(--or-pale);font-style:italic;text-align:center;">'
+              + '✦ Nouveau record personnel enregistré ! ✦</div>';
+      } else {
+        html += `<div style="padding:14px 20px;margin-bottom:14px;background:rgba(56,189,248,0.08);border-left:2px solid var(--bleu);color:var(--bleu-pale);font-style:italic;text-align:center;">
+                   Votre meilleur score reste ${submitResult.best.score}/20 en ${formatTime(submitResult.best.time_seconds)}.
+                 </div>`;
+      }
+    }
+
+    html += '<div class="leaderboard-row header">';
+    html += '<div>Rang</div><div>Nom</div><div>Score</div><div>Temps</div>';
+    html += '</div>';
+
+    if (leaderboard.length === 0) {
+      html += '<div style="padding:30px;text-align:center;color:var(--gris);font-style:italic;">Aucun score enregistré pour le moment.</div>';
+    } else {
+      leaderboard.forEach((entry, idx) => {
+        const medal = idx === 0 ? '🥇' : idx === 1 ? '🥈' : idx === 2 ? '🥉' : (idx + 1);
+        const isMe = currentUser && entry.username === currentUser.username;
+        const rowStyle = isMe ? 'style="background:rgba(45,212,191,0.10);"' : '';
+        html += `<div class="leaderboard-row" ${rowStyle}>`;
+        html += `<div class="leaderboard-rank">${medal}</div>`;
+        html += `<div class="leaderboard-name">${escapeHtml(entry.username)}${isMe ? ' ✦' : ''}</div>`;
+        html += `<div class="leaderboard-score">${entry.score}/${entry.total}</div>`;
+        html += `<div class="leaderboard-time">${formatTime(entry.time_seconds)}</div>`;
+        html += '</div>';
+      });
+    }
+
+    leaderboardTable.innerHTML = html;
+  }
+
+  function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({
+      '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    })[c]);
+  }
+
+  function restart() {
+    current = 0;
+    scoreCorrect = 0;
+    scoreWrong = 0;
+    scoreSkip = 0;
+    streak = 0;
+    answerHistory = [];
+    answered = false;
+    stopTimer();
+    sCorrect.textContent = '0';
+    sWrong.textContent = '0';
+    sSkip.textContent = '0';
+    endScreen.classList.remove('show');
+    leaderboardContainer.classList.remove('show');
+    quizStage.style.display = '';
+    progressOuter.style.display = 'none';
+    timerDisplay.style.display = 'none';
+    const timerVal = document.getElementById('timerValue');
+    if (timerVal) { timerVal.textContent = '00:00'; timerVal.className = 'card-timer-value'; }
+    flameLeft.classList.remove('active');
+    flameRight.classList.remove('active');
+    modeSelector.style.display = 'block';
+    quizHeader.classList.remove('show');
+
+    const allQuestions = [...ORIGINAL_QUESTIONS];
+    QUESTIONS.length = 0;
+    QUESTIONS.push(...allQuestions);
+
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
+  }
+
+  // ─── ÉTOILES CONFETTI ──────────────────────────────────────────────────
+  function burstStars() {
+    const emojis = ['✦', '⭐', '★', '✨', '🌟'];
+    for (let i = 0; i < 8; i++) {
+      const el = document.createElement('span');
+      el.className = 'star-burst';
+      el.textContent = emojis[Math.floor(Math.random() * emojis.length)];
+      const x = 40 + Math.random() * (window.innerWidth - 80);
+      const y = window.innerHeight * 0.35 + Math.random() * 100;
+      el.style.left = x + 'px';
+      el.style.top = y + 'px';
+      el.style.setProperty('--dx', (Math.random() - 0.5) * 200 + 'px');
+      el.style.setProperty('--dy', -(80 + Math.random() * 160) + 'px');
+      el.style.animationDelay = (i * 0.06) + 's';
+      document.body.appendChild(el);
+      el.addEventListener('animationend', () => el.remove());
+    }
+  }
+
+  // ─── ÉVÉNEMENTS ───────────────────────────────────────────────────────
+  submitBtn.addEventListener('click', submit);
+  skipBtn.addEventListener('click', skip);
+  nextBtn.addEventListener('click', next);
+  restartBtn.addEventListener('click', restart);
+  restartBtn20.addEventListener('click', restart);
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      if (!quizStage.classList.contains('show')) return;
+      if (!answered) {
+        submit();
+      } else {
+        next();
+      }
+    }
+  });
+
+  answerInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') e.preventDefault();
+  });
+
+  // ─── MODE ENTRAÎNEMENT ─────────────────────────────────────────────────
+  const trainingScreen  = document.getElementById('trainingScreen');
+  const trainingBody    = document.getElementById('trainingBody');
+  const trainingSearch  = document.getElementById('trainingSearch');
+  const trainingBack    = document.getElementById('trainingBack');
+
+  const ORIGINAL_QUESTIONS = [...QUESTIONS];
+
+  function renderTraining(filter) {
+    const q = filter ? filter.toLowerCase() : '';
+    const rows = ORIGINAL_QUESTIONS.filter(item =>
+      item.year.toLowerCase().includes(q) ||
+      item.answer.toLowerCase().includes(q) ||
+      (item.note && item.note.toLowerCase().includes(q))
+    );
+    if (rows.length === 0) {
+      trainingBody.innerHTML = '<tr><td colspan="3" class="training-empty">Aucun résultat</td></tr>';
+      return;
+    }
+    // Tri alphabétique par pays pour le mode entraînement
+    const sorted = [...rows].sort((a, b) => a.year.localeCompare(b.year, 'fr'));
+    trainingBody.innerHTML = sorted.map(item =>
+      `<tr>
+        <td class="training-num">${escapeHtml(item.year)}</td>
+        <td class="training-name">${escapeHtml(item.answer)}</td>
+        <td class="training-note">${item.note ? escapeHtml(item.note) : ''}</td>
+      </tr>`
+    ).join('');
+  }
+
+  document.getElementById('modeTraining').addEventListener('click', () => {
+    modeSelector.style.display = 'none';
+    trainingScreen.classList.add('show');
+    renderTraining('');
+    trainingSearch.focus();
+  });
+
+  trainingSearch.addEventListener('input', () => renderTraining(trainingSearch.value));
+
+  trainingBack.addEventListener('click', () => {
+    trainingScreen.classList.remove('show');
+    trainingSearch.value = '';
+    modeSelector.style.display = '';
+  });
+
+  // ─── BADGE UTILISATEUR + INIT AUTH ─────────────────────────────────
+  function renderUserBadge() {
+    const slot = document.getElementById('userBadgeSlot');
+    if (!slot) return;
+    if (currentUser) {
+      slot.innerHTML = `
+        <span class="lq-user-badge" id="userBadgeBtn" title="Se déconnecter">
+          <span class="dot"></span>${escapeHtml(currentUser.username)}
+        </span>`;
+      document.getElementById('userBadgeBtn').addEventListener('click', async () => {
+        if (confirm('Se déconnecter ?')) await signOut();
+      });
+    } else {
+      slot.innerHTML = `<span class="lq-user-badge" id="userBadgeBtn">Connexion</span>`;
+      document.getElementById('userBadgeBtn').addEventListener('click', () => {
+        showAuthModal(async () => {
+          currentUser = await getCurrentUser();
+          renderUserBadge();
+          renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
+        });
+      });
+    }
+  }
+
+  // Mettre à jour le compteur de questions dans la nav (197 questions)
+  document.getElementById('progressText').textContent = `1 / ${QUESTIONS.length}`;
+
+  (async () => {
+    currentUser = await getCurrentUser();
+    renderUserBadge();
+    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 20);
+  })();
+
+  </script>
+
+</body>
+</html>
