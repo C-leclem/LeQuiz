@@ -4,13 +4,6 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Les Présidents de la République — LeQuiz</title>
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png">
-  <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png">
-  <link rel="shortcut icon" href="/favicon.ico">
-  <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
-  <link rel="manifest" href="/site.webmanifest">
-  <meta name="theme-color" content="#3a0d0d">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Oswald:wght@200;300;400;500;600;700&display=swap" rel="stylesheet" />
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -184,6 +177,235 @@
       transform: translateY(-2px);
       box-shadow: 0 10px 30px rgba(26,58,110,0.2);
     }
+
+    /* ─── STATS CLASSIC SCREEN ─── */
+    .stats-screen {
+      width: 100%;
+      max-width: 720px;
+      padding: 0 20px;
+      margin: 50px auto 0;
+      display: none;
+      animation: fadeIn 0.5s ease both;
+    }
+    .stats-screen.show { display: block; }
+
+    .stats-header {
+      text-align: center;
+      margin-bottom: 32px;
+    }
+    .stats-header .quiz-category {
+      margin-bottom: 10px;
+    }
+    .stats-header h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(1.8rem, 4.5vw, 2.6rem);
+      font-weight: 900;
+      color: var(--or-pale);
+      margin-bottom: 6px;
+    }
+    .stats-header .stats-subtitle {
+      font-style: italic;
+      color: rgba(238,242,248,0.55);
+      font-size: 1rem;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 24px;
+      margin-bottom: 36px;
+    }
+
+    .stats-card {
+      background: linear-gradient(135deg, rgba(26,58,110,0.15) 0%, rgba(26,58,110,0.04) 100%);
+      border: 1px solid rgba(201,168,76,0.18);
+      padding: 24px 26px;
+      border-radius: 2px;
+      position: relative;
+    }
+
+    .stats-card-title {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.78rem;
+      letter-spacing: 0.28em;
+      text-transform: uppercase;
+      color: var(--or);
+      margin-bottom: 18px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .stats-card-meta {
+      font-family: 'Cormorant Garamond', serif;
+      font-style: italic;
+      font-size: 0.85rem;
+      letter-spacing: 0.05em;
+      color: var(--gris);
+      text-transform: none;
+    }
+
+    /* Petites stats récap */
+    .stats-summary {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 22px;
+    }
+    .stats-summary-item {
+      text-align: center;
+      padding: 14px 8px;
+      background: rgba(0,0,0,0.2);
+      border: 1px solid rgba(201,168,76,0.1);
+    }
+    .stats-summary-val {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.6rem;
+      font-weight: 700;
+      color: var(--or-pale);
+      line-height: 1;
+    }
+    .stats-summary-label {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.62rem;
+      letter-spacing: 0.22em;
+      text-transform: uppercase;
+      color: var(--gris);
+      margin-top: 6px;
+    }
+
+    /* Graphique */
+    .stats-chart-wrap {
+      position: relative;
+      width: 100%;
+      height: 220px;
+    }
+    .stats-chart-wrap canvas {
+      width: 100% !important;
+      height: 100% !important;
+      display: block;
+    }
+    .stats-chart-empty {
+      height: 180px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-style: italic;
+      color: var(--gris);
+      border: 1px dashed rgba(201,168,76,0.2);
+      font-size: 0.95rem;
+    }
+
+    /* Top 5 erreurs */
+    .stats-top {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .stats-top-row {
+      display: grid;
+      grid-template-columns: 28px 1fr auto;
+      align-items: center;
+      gap: 14px;
+      padding: 10px 14px;
+      background: rgba(0,0,0,0.18);
+      border-left: 2px solid rgba(176,48,48,0.5);
+    }
+    .stats-top-rank {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.85rem;
+      color: var(--or);
+      font-weight: 500;
+    }
+    .stats-top-q {
+      font-family: 'Cormorant Garamond', serif;
+      font-size: 1.05rem;
+      color: var(--creme);
+    }
+    .stats-top-q small {
+      display: block;
+      font-size: 0.78rem;
+      color: rgba(238,242,248,0.45);
+      font-style: italic;
+      margin-top: 2px;
+    }
+    .stats-top-count {
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.7rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--rouge-clair);
+      background: rgba(176,48,48,0.12);
+      border: 1px solid rgba(176,48,48,0.3);
+      padding: 4px 9px;
+      white-space: nowrap;
+    }
+    .stats-empty {
+      padding: 24px 18px;
+      text-align: center;
+      font-style: italic;
+      color: var(--gris);
+      border: 1px dashed rgba(201,168,76,0.18);
+    }
+
+    .stats-actions {
+      display: flex;
+      gap: 14px;
+      justify-content: center;
+      flex-wrap: wrap;
+      margin-top: 12px;
+    }
+    .stats-launch-btn {
+      background: linear-gradient(135deg, var(--or) 0%, var(--or-clair) 100%);
+      border: none;
+      color: var(--noir);
+      font-family: 'Oswald', sans-serif;
+      font-size: 1rem;
+      font-weight: 600;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 16px 36px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+    .stats-launch-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 24px rgba(201,168,76,0.25);
+    }
+    .stats-back-btn {
+      background: transparent;
+      border: 1px solid rgba(201,168,76,0.3);
+      color: var(--or-pale);
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.85rem;
+      font-weight: 400;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      padding: 16px 26px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      border-radius: 2px;
+    }
+    .stats-back-btn:hover {
+      border-color: var(--or);
+      background: rgba(201,168,76,0.08);
+    }
+    .stats-reset-link {
+      display: none;
+      text-align: center;
+      margin: 24px auto 0;
+      font-family: 'Oswald', sans-serif;
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--gris);
+      background: none;
+      border: none;
+      cursor: pointer;
+      transition: color 0.2s ease;
+    }
+    .stats-reset-link:hover { color: var(--rouge-clair); }
 
     /* ─── QUIZ HEADER ─── */
     .quiz-header {
@@ -780,6 +1002,42 @@
       <div id="leaderboardPreview"></div>
     </div>
 
+    <!-- Stats Mode Classique -->
+    <div class="stats-screen" id="statsScreen">
+      <div class="stats-header">
+        <p class="quiz-category">✦ Mode Classique ✦</p>
+        <h1>Vos statistiques</h1>
+        <p class="stats-subtitle">Consultez vos progrès avant de relancer une partie</p>
+      </div>
+
+      <div class="stats-summary" id="statsSummary"></div>
+
+      <div class="stats-grid">
+        <div class="stats-card">
+          <div class="stats-card-title">
+            <span>Progression</span>
+            <span class="stats-card-meta" id="statsChartMeta"></span>
+          </div>
+          <div id="statsChartContainer"></div>
+        </div>
+
+        <div class="stats-card">
+          <div class="stats-card-title">
+            <span>Top 5 questions ratées</span>
+            <span class="stats-card-meta" id="statsTopMeta"></span>
+          </div>
+          <div id="statsTopContainer"></div>
+        </div>
+      </div>
+
+      <div class="stats-actions">
+        <button class="stats-back-btn" id="statsBack">← Retour</button>
+        <button class="stats-launch-btn" id="statsLaunch">Lancer la partie</button>
+      </div>
+
+      <button class="stats-reset-link" id="statsReset">Réinitialiser mes statistiques</button>
+    </div>
+
     <!-- Mode Entraînement -->
     <div class="training-screen" id="trainingScreen">
       <div class="training-header">
@@ -999,6 +1257,7 @@
   let elapsedSeconds = 0;
   let streak = 0;
   let answerHistory = [];
+  let missedQuestions = []; // questions ratées (wrong + skip) de la partie courante
   let leaderboard = [];
   let currentUser = null;
 
@@ -1103,8 +1362,7 @@
 
   // ─── MODES ────────────────────────────────────────────────────────
   modeClassicBtn.addEventListener('click', () => {
-    gameMode = 'classic';
-    initClassicMode();
+    showStatsScreen();
   });
 
   mode20Btn.addEventListener('click', async () => {
@@ -1133,7 +1391,7 @@
     QUESTIONS.push(...allShuffled);
 
     current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
-    streak = 0; answerHistory = []; answered = false;
+    streak = 0; answerHistory = []; missedQuestions = []; answered = false;
     sCorrect.textContent = '0'; sWrong.textContent = '0'; sSkip.textContent = '0';
     rebuildProgressBar();
     updateFlames();
@@ -1216,6 +1474,13 @@
       const hadStreak = streak >= 5;
       streak = 0;
       answerHistory.push('wrong');
+      if (gameMode === 'classic') {
+        missedQuestions.push({
+          year: QUESTIONS[current].year,
+          answer: QUESTIONS[current].answer,
+          type: 'wrong'
+        });
+      }
       updateLastSegment('wrong');
       updateFlames();
       if (hadStreak) triggerDamage();
@@ -1239,6 +1504,13 @@
     const hadStreak = streak >= 5;
     streak = 0;
     answerHistory.push('skip');
+    if (gameMode === 'classic') {
+      missedQuestions.push({
+        year: QUESTIONS[current].year,
+        answer: QUESTIONS[current].answer,
+        type: 'skip'
+      });
+    }
     updateLastSegment('skip');
     updateFlames();
     if (hadStreak) triggerDamage();
@@ -1262,6 +1534,16 @@
     progressOuter.style.display = 'none';
 
     if (gameMode === 'classic') {
+      // Enregistrer la tentative dans l'historique local
+      saveClassicAttempt({
+        date: Date.now(),
+        correct: scoreCorrect,
+        wrong: scoreWrong,
+        skip: scoreSkip,
+        total: QUESTIONS.length,
+        missed: missedQuestions
+      });
+
       endScreen.classList.add('show');
       progressText.textContent = 'Terminé !';
       const pct = Math.round((scoreCorrect / QUESTIONS.length) * 100);
@@ -1340,8 +1622,9 @@
   }
 
   function restart() {
+    const wasClassic = gameMode === 'classic';
     current = 0; scoreCorrect = 0; scoreWrong = 0; scoreSkip = 0;
-    streak = 0; answerHistory = []; answered = false;
+    streak = 0; answerHistory = []; missedQuestions = []; answered = false;
     stopTimer();
     sCorrect.textContent = '0'; sWrong.textContent = '0'; sSkip.textContent = '0';
     endScreen.classList.remove('show');
@@ -1353,11 +1636,18 @@
     if (timerVal) { timerVal.textContent = '00:00'; timerVal.className = 'card-timer-value'; }
     flameLeft.classList.remove('active');
     flameRight.classList.remove('active');
-    modeSelector.style.display = 'block';
     quizHeader.classList.remove('show');
     QUESTIONS.length = 0;
-    // Rafraîchir le classement au retour au menu
-    renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 10);
+
+    if (wasClassic) {
+      // Retour à l'écran des stats avec le nouveau résultat intégré
+      gameMode = null;
+      showStatsScreen();
+    } else {
+      modeSelector.style.display = 'block';
+      // Rafraîchir le classement au retour au menu
+      renderLeaderboardPreview('leaderboardPreview', QUIZ_ID, 10);
+    }
   }
 
   // ─── ÉTOILES CONFETTI ─────────────────────────────────────────────
@@ -1457,6 +1747,310 @@
       });
     }
   }
+
+  // ─── STATS MODE CLASSIQUE ─────────────────────────────────────────
+  const STATS_KEY = `lequiz_classic_history_${QUIZ_ID}`;
+  const MAX_ATTEMPTS_KEPT = 50; // on borne pour éviter d'exploser localStorage
+
+  const statsScreen        = document.getElementById('statsScreen');
+  const statsSummary       = document.getElementById('statsSummary');
+  const statsChartContainer = document.getElementById('statsChartContainer');
+  const statsChartMeta     = document.getElementById('statsChartMeta');
+  const statsTopContainer  = document.getElementById('statsTopContainer');
+  const statsTopMeta       = document.getElementById('statsTopMeta');
+  const statsLaunchBtn     = document.getElementById('statsLaunch');
+  const statsBackBtn       = document.getElementById('statsBack');
+  const statsResetBtn      = document.getElementById('statsReset');
+
+  function loadClassicHistory() {
+    try {
+      const raw = localStorage.getItem(STATS_KEY);
+      if (!raw) return { attempts: [] };
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.attempts)) return { attempts: [] };
+      return parsed;
+    } catch (e) {
+      return { attempts: [] };
+    }
+  }
+
+  function saveClassicHistory(data) {
+    try {
+      localStorage.setItem(STATS_KEY, JSON.stringify(data));
+    } catch (e) {
+      // localStorage plein ou indisponible — on ignore silencieusement
+    }
+  }
+
+  function saveClassicAttempt(attempt) {
+    const data = loadClassicHistory();
+    data.attempts.push(attempt);
+    if (data.attempts.length > MAX_ATTEMPTS_KEPT) {
+      data.attempts = data.attempts.slice(-MAX_ATTEMPTS_KEPT);
+    }
+    saveClassicHistory(data);
+  }
+
+  function clearClassicHistory() {
+    try { localStorage.removeItem(STATS_KEY); } catch (e) {}
+  }
+
+  // ─── GRAPHIQUE PROGRESSION (canvas natif) ──────────────────────────
+  function renderProgressChart(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-chart-empty';
+      empty.textContent = 'Lancez votre première partie pour voir votre progression.';
+      container.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'stats-chart-wrap';
+    const canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    container.appendChild(wrap);
+
+    // Limite aux 20 dernières tentatives pour la lisibilité
+    const data = attempts.slice(-20);
+    const total = data[0].total;
+
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = wrap.clientWidth;
+    const cssH = wrap.clientHeight;
+    canvas.width  = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const padL = 38, padR = 16, padT = 18, padB = 28;
+    const W = cssW - padL - padR;
+    const H = cssH - padT - padB;
+
+    const maxY = Math.max(total, ...data.map(d => d.correct));
+    const niceMax = total; // l'axe va de 0 au total de questions
+
+    // Style général
+    ctx.font = '10px Oswald, sans-serif';
+    ctx.fillStyle = 'rgba(238,242,248,0.55)';
+    ctx.strokeStyle = 'rgba(201,168,76,0.18)';
+    ctx.lineWidth = 1;
+
+    // Grille horizontale (4 lignes) + libellés Y
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const y = padT + (H * i / ySteps);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + W, y);
+      ctx.strokeStyle = i === ySteps ? 'rgba(201,168,76,0.35)' : 'rgba(201,168,76,0.1)';
+      ctx.stroke();
+      const val = Math.round(niceMax * (1 - i / ySteps));
+      ctx.fillStyle = 'rgba(238,242,248,0.4)';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(val, padL - 6, y);
+    }
+
+    // Coordonnées des points
+    const n = data.length;
+    const xFor = i => n === 1 ? padL + W / 2 : padL + (W * i / (n - 1));
+    const yFor = v => padT + H * (1 - v / niceMax);
+
+    // Aire sous la courbe
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + H);
+    grad.addColorStop(0, 'rgba(201,168,76,0.35)');
+    grad.addColorStop(1, 'rgba(201,168,76,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(xFor(0), padT + H);
+    data.forEach((d, i) => ctx.lineTo(xFor(i), yFor(d.correct)));
+    ctx.lineTo(xFor(n - 1), padT + H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Ligne
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = xFor(i), y = yFor(d.correct);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Points
+    data.forEach((d, i) => {
+      const x = xFor(i), y = yFor(d.correct);
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#f0dfa0';
+      ctx.fill();
+      ctx.strokeStyle = '#0a0804';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // Labels X (n° de tentative — on affiche au max ~6 labels)
+    const labelStep = Math.max(1, Math.ceil(n / 6));
+    ctx.fillStyle = 'rgba(238,242,248,0.45)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const startIdx = attempts.length - n; // index global de data[0]
+    data.forEach((d, i) => {
+      if (i % labelStep !== 0 && i !== n - 1) return;
+      const globalNum = startIdx + i + 1;
+      ctx.fillText(`#${globalNum}`, xFor(i), padT + H + 6);
+    });
+
+    // Meilleur score : marqueur
+    const bestVal = Math.max(...data.map(d => d.correct));
+    const bestIdx = data.findIndex(d => d.correct === bestVal);
+    if (bestIdx >= 0) {
+      const x = xFor(bestIdx), y = yFor(bestVal);
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.strokeStyle = '#f0dfa0';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // ─── TOP 5 QUESTIONS RATÉES ────────────────────────────────────────
+  function renderTopMissed(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-empty';
+      empty.textContent = 'Aucune partie jouée pour le moment.';
+      container.appendChild(empty);
+      return;
+    }
+
+    // Comptage cumulé sur toutes les tentatives
+    const counter = new Map(); // key: year (unique), value: { year, answer, count }
+    attempts.forEach(att => {
+      (att.missed || []).forEach(m => {
+        const key = m.year;
+        const entry = counter.get(key);
+        if (entry) entry.count++;
+        else counter.set(key, { year: m.year, answer: m.answer, count: 1 });
+      });
+    });
+
+    if (counter.size === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-empty';
+      empty.textContent = 'Aucune erreur enregistrée. Bravo !';
+      container.appendChild(empty);
+      return;
+    }
+
+    const sorted = [...counter.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'stats-top';
+    sorted.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'stats-top-row';
+      row.innerHTML = `
+        <div class="stats-top-rank">${idx + 1}</div>
+        <div class="stats-top-q">
+          ${escapeHtml(entry.year)}
+          <small>Réponse : ${escapeHtml(entry.answer)}</small>
+        </div>
+        <div class="stats-top-count">${entry.count}× ratée</div>
+      `;
+      wrap.appendChild(row);
+    });
+    container.appendChild(wrap);
+  }
+
+  // ─── RÉSUMÉ NUMÉRIQUE ─────────────────────────────────────────────
+  function renderSummary(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      container.innerHTML = `
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Parties</div></div>
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Meilleur score</div></div>
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Moyenne</div></div>
+      `;
+      return;
+    }
+    const total = attempts[0].total;
+    const best = Math.max(...attempts.map(a => a.correct));
+    const avg = Math.round(attempts.reduce((s, a) => s + a.correct, 0) / attempts.length);
+    container.innerHTML = `
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${attempts.length}</div>
+        <div class="stats-summary-label">Parties jouées</div>
+      </div>
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${best}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
+        <div class="stats-summary-label">Meilleur score</div>
+      </div>
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${avg}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
+        <div class="stats-summary-label">Moyenne</div>
+      </div>
+    `;
+  }
+
+  // ─── AFFICHER L'ÉCRAN DE STATS ─────────────────────────────────────
+  function showStatsScreen() {
+    modeSelector.style.display = 'none';
+    statsScreen.classList.add('show');
+
+    const data = loadClassicHistory();
+    const attempts = data.attempts;
+
+    renderSummary(statsSummary, attempts);
+    renderProgressChart(statsChartContainer, attempts);
+    renderTopMissed(statsTopContainer, attempts);
+
+    statsChartMeta.textContent = attempts.length
+      ? (attempts.length > 20 ? `20 dernières sur ${attempts.length}` : `${attempts.length} tentative${attempts.length > 1 ? 's' : ''}`)
+      : '';
+    statsTopMeta.textContent = '';
+
+    statsResetBtn.style.display = attempts.length ? 'block' : 'none';
+  }
+
+  function hideStatsScreen() {
+    statsScreen.classList.remove('show');
+    modeSelector.style.display = 'block';
+  }
+
+  statsBackBtn.addEventListener('click', hideStatsScreen);
+
+  statsLaunchBtn.addEventListener('click', () => {
+    statsScreen.classList.remove('show');
+    gameMode = 'classic';
+    initClassicMode();
+  });
+
+  statsResetBtn.addEventListener('click', () => {
+    if (confirm('Réinitialiser toutes vos statistiques pour ce quiz ? Cette action est irréversible.')) {
+      clearClassicHistory();
+      showStatsScreen();
+    }
+  });
+
+  // Re-render du graphique au resize (sinon le canvas reste pixellisé)
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (!statsScreen.classList.contains('show')) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const data = loadClassicHistory();
+      renderProgressChart(statsChartContainer, data.attempts);
+    }, 150);
+  });
 
   (async () => {
     currentUser = await getCurrentUser();
