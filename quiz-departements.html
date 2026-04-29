@@ -1587,312 +1587,7 @@
 
   mode20Btn.addEventListener('click', async () => {
     if (!currentUser) {
-      showAuthModal
-  // ─── STATS MODE CLASSIQUE ─────────────────────────────────────────
-  const STATS_KEY = `lequiz_classic_history_${QUIZ_ID}`;
-  const MAX_ATTEMPTS_KEPT = 50; // on borne pour éviter d'exploser localStorage
-
-  const statsScreen        = document.getElementById('statsScreen');
-  const statsSummary       = document.getElementById('statsSummary');
-  const statsChartContainer = document.getElementById('statsChartContainer');
-  const statsChartMeta     = document.getElementById('statsChartMeta');
-  const statsTopContainer  = document.getElementById('statsTopContainer');
-  const statsTopMeta       = document.getElementById('statsTopMeta');
-  const statsLaunchBtn     = document.getElementById('statsLaunch');
-  const statsBackBtn       = document.getElementById('statsBack');
-  const statsResetBtn      = document.getElementById('statsReset');
-
-  function loadClassicHistory() {
-    try {
-      const raw = localStorage.getItem(STATS_KEY);
-      if (!raw) return { attempts: [] };
-      const parsed = JSON.parse(raw);
-      if (!parsed || !Array.isArray(parsed.attempts)) return { attempts: [] };
-      return parsed;
-    } catch (e) {
-      return { attempts: [] };
-    }
-  }
-
-  function saveClassicHistory(data) {
-    try {
-      localStorage.setItem(STATS_KEY, JSON.stringify(data));
-    } catch (e) {
-      // localStorage plein ou indisponible — on ignore silencieusement
-    }
-  }
-
-  function saveClassicAttempt(attempt) {
-    const data = loadClassicHistory();
-    data.attempts.push(attempt);
-    if (data.attempts.length > MAX_ATTEMPTS_KEPT) {
-      data.attempts = data.attempts.slice(-MAX_ATTEMPTS_KEPT);
-    }
-    saveClassicHistory(data);
-  }
-
-  function clearClassicHistory() {
-    try { localStorage.removeItem(STATS_KEY); } catch (e) {}
-  }
-
-  // ─── GRAPHIQUE PROGRESSION (canvas natif) ──────────────────────────
-  function renderProgressChart(container, attempts) {
-    container.innerHTML = '';
-    if (!attempts.length) {
-      const empty = document.createElement('div');
-      empty.className = 'stats-chart-empty';
-      empty.textContent = 'Lancez votre première partie pour voir votre progression.';
-      container.appendChild(empty);
-      return;
-    }
-
-    const wrap = document.createElement('div');
-    wrap.className = 'stats-chart-wrap';
-    const canvas = document.createElement('canvas');
-    wrap.appendChild(canvas);
-    container.appendChild(wrap);
-
-    // Limite aux 20 dernières tentatives pour la lisibilité
-    const data = attempts.slice(-20);
-    const total = data[0].total;
-
-    const dpr = window.devicePixelRatio || 1;
-    const cssW = wrap.clientWidth;
-    const cssH = wrap.clientHeight;
-    canvas.width  = cssW * dpr;
-    canvas.height = cssH * dpr;
-    canvas.style.width  = cssW + 'px';
-    canvas.style.height = cssH + 'px';
-    const ctx = canvas.getContext('2d');
-    ctx.scale(dpr, dpr);
-
-    const padL = 38, padR = 16, padT = 18, padB = 28;
-    const W = cssW - padL - padR;
-    const H = cssH - padT - padB;
-
-    const maxY = Math.max(total, ...data.map(d => d.correct));
-    const niceMax = total; // l'axe va de 0 au total de questions
-
-    // Style général
-    ctx.font = '10px Oswald, sans-serif';
-    ctx.fillStyle = 'rgba(238,242,248,0.55)';
-    ctx.strokeStyle = 'rgba(201,168,76,0.18)';
-    ctx.lineWidth = 1;
-
-    // Grille horizontale (4 lignes) + libellés Y
-    const ySteps = 4;
-    for (let i = 0; i <= ySteps; i++) {
-      const y = padT + (H * i / ySteps);
-      ctx.beginPath();
-      ctx.moveTo(padL, y);
-      ctx.lineTo(padL + W, y);
-      ctx.strokeStyle = i === ySteps ? 'rgba(201,168,76,0.35)' : 'rgba(201,168,76,0.1)';
-      ctx.stroke();
-      const val = Math.round(niceMax * (1 - i / ySteps));
-      ctx.fillStyle = 'rgba(238,242,248,0.4)';
-      ctx.textAlign = 'right';
-      ctx.textBaseline = 'middle';
-      ctx.fillText(val, padL - 6, y);
-    }
-
-    // Coordonnées des points
-    const n = data.length;
-    const xFor = i => n === 1 ? padL + W / 2 : padL + (W * i / (n - 1));
-    const yFor = v => padT + H * (1 - v / niceMax);
-
-    // Aire sous la courbe
-    const grad = ctx.createLinearGradient(0, padT, 0, padT + H);
-    grad.addColorStop(0, 'rgba(201,168,76,0.35)');
-    grad.addColorStop(1, 'rgba(201,168,76,0)');
-    ctx.fillStyle = grad;
-    ctx.beginPath();
-    ctx.moveTo(xFor(0), padT + H);
-    data.forEach((d, i) => ctx.lineTo(xFor(i), yFor(d.correct)));
-    ctx.lineTo(xFor(n - 1), padT + H);
-    ctx.closePath();
-    ctx.fill();
-
-    // Ligne
-    ctx.strokeStyle = '#c9a84c';
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    data.forEach((d, i) => {
-      const x = xFor(i), y = yFor(d.correct);
-      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
-    });
-    ctx.stroke();
-
-    // Points
-    data.forEach((d, i) => {
-      const x = xFor(i), y = yFor(d.correct);
-      ctx.beginPath();
-      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
-      ctx.fillStyle = '#f0dfa0';
-      ctx.fill();
-      ctx.strokeStyle = '#0a0804';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    });
-
-    // Labels X (n° de tentative — on affiche au max ~6 labels)
-    const labelStep = Math.max(1, Math.ceil(n / 6));
-    ctx.fillStyle = 'rgba(238,242,248,0.45)';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'top';
-    const startIdx = attempts.length - n; // index global de data[0]
-    data.forEach((d, i) => {
-      if (i % labelStep !== 0 && i !== n - 1) return;
-      const globalNum = startIdx + i + 1;
-      ctx.fillText(`#${globalNum}`, xFor(i), padT + H + 6);
-    });
-
-    // Meilleur score : marqueur
-    const bestVal = Math.max(...data.map(d => d.correct));
-    const bestIdx = data.findIndex(d => d.correct === bestVal);
-    if (bestIdx >= 0) {
-      const x = xFor(bestIdx), y = yFor(bestVal);
-      ctx.beginPath();
-      ctx.arc(x, y, 6, 0, Math.PI * 2);
-      ctx.strokeStyle = '#f0dfa0';
-      ctx.lineWidth = 1.5;
-      ctx.stroke();
-    }
-  }
-
-  // ─── TOP 5 QUESTIONS RATÉES ────────────────────────────────────────
-  function renderTopMissed(container, attempts) {
-    container.innerHTML = '';
-    if (!attempts.length) {
-      const empty = document.createElement('div');
-      empty.className = 'stats-empty';
-      empty.textContent = 'Aucune partie jouée pour le moment.';
-      container.appendChild(empty);
-      return;
-    }
-
-    // Comptage cumulé sur toutes les tentatives
-    const counter = new Map(); // key: year (unique), value: { year, answer, count }
-    attempts.forEach(att => {
-      (att.missed || []).forEach(m => {
-        const key = m.year;
-        const entry = counter.get(key);
-        if (entry) entry.count++;
-        else counter.set(key, { year: m.year, answer: m.answer, count: 1 });
-      });
-    });
-
-    if (counter.size === 0) {
-      const empty = document.createElement('div');
-      empty.className = 'stats-empty';
-      empty.textContent = 'Aucune erreur enregistrée. Bravo !';
-      container.appendChild(empty);
-      return;
-    }
-
-    const sorted = [...counter.values()]
-      .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
-
-    const wrap = document.createElement('div');
-    wrap.className = 'stats-top';
-    sorted.forEach((entry, idx) => {
-      const row = document.createElement('div');
-      row.className = 'stats-top-row';
-      row.innerHTML = `
-        <div class="stats-top-rank">${idx + 1}</div>
-        <div class="stats-top-q">
-          ${escapeHtml(entry.year)}
-          <small>Réponse : ${escapeHtml(entry.answer)}</small>
-        </div>
-        <div class="stats-top-count">${entry.count}× ratée</div>
-      `;
-      wrap.appendChild(row);
-    });
-    container.appendChild(wrap);
-  }
-
-  // ─── RÉSUMÉ NUMÉRIQUE ─────────────────────────────────────────────
-  function renderSummary(container, attempts) {
-    container.innerHTML = '';
-    if (!attempts.length) {
-      container.innerHTML = `
-        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Parties</div></div>
-        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Meilleur score</div></div>
-        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Moyenne</div></div>
-      `;
-      return;
-    }
-    const total = attempts[0].total;
-    const best = Math.max(...attempts.map(a => a.correct));
-    const avg = Math.round(attempts.reduce((s, a) => s + a.correct, 0) / attempts.length);
-    container.innerHTML = `
-      <div class="stats-summary-item">
-        <div class="stats-summary-val">${attempts.length}</div>
-        <div class="stats-summary-label">Parties jouées</div>
-      </div>
-      <div class="stats-summary-item">
-        <div class="stats-summary-val">${best}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
-        <div class="stats-summary-label">Meilleur score</div>
-      </div>
-      <div class="stats-summary-item">
-        <div class="stats-summary-val">${avg}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
-        <div class="stats-summary-label">Moyenne</div>
-      </div>
-    `;
-  }
-
-  // ─── AFFICHER L'ÉCRAN DE STATS ─────────────────────────────────────
-  function showStatsScreen() {
-    modeSelector.style.display = 'none';
-    statsScreen.classList.add('show');
-
-    const data = loadClassicHistory();
-    const attempts = data.attempts;
-
-    renderSummary(statsSummary, attempts);
-    renderProgressChart(statsChartContainer, attempts);
-    renderTopMissed(statsTopContainer, attempts);
-
-    statsChartMeta.textContent = attempts.length
-      ? (attempts.length > 20 ? `20 dernières sur ${attempts.length}` : `${attempts.length} tentative${attempts.length > 1 ? 's' : ''}`)
-      : '';
-    statsTopMeta.textContent = '';
-
-    statsResetBtn.style.display = attempts.length ? 'block' : 'none';
-  }
-
-  function hideStatsScreen() {
-    statsScreen.classList.remove('show');
-    modeSelector.style.display = 'block';
-  }
-
-  statsBackBtn.addEventListener('click', hideStatsScreen);
-
-  statsLaunchBtn.addEventListener('click', () => {
-    statsScreen.classList.remove('show');
-    gameMode = 'classic';
-    initClassicMode();
-  });
-
-  statsResetBtn.addEventListener('click', () => {
-    if (confirm('Réinitialiser toutes vos statistiques pour ce quiz ? Cette action est irréversible.')) {
-      clearClassicHistory();
-      showStatsScreen();
-    }
-  });
-
-  // Re-render du graphique au resize (sinon le canvas reste pixellisé)
-  let resizeTimer = null;
-  window.addEventListener('resize', () => {
-    if (!statsScreen.classList.contains('show')) return;
-    clearTimeout(resizeTimer);
-    resizeTimer = setTimeout(() => {
-      const data = loadClassicHistory();
-      renderProgressChart(statsChartContainer, data.attempts);
-    }, 150);
-  });
-
-(async () => {
+      showAuthModal(async () => {
         currentUser = await getCurrentUser();
         renderUserBadge();
         gameMode = '20questions';
@@ -2310,6 +2005,311 @@
       });
     }
   }
+
+  // ─── STATS MODE CLASSIQUE ─────────────────────────────────────────
+  const STATS_KEY = `lequiz_classic_history_${QUIZ_ID}`;
+  const MAX_ATTEMPTS_KEPT = 50; // on borne pour éviter d'exploser localStorage
+
+  const statsScreen        = document.getElementById('statsScreen');
+  const statsSummary       = document.getElementById('statsSummary');
+  const statsChartContainer = document.getElementById('statsChartContainer');
+  const statsChartMeta     = document.getElementById('statsChartMeta');
+  const statsTopContainer  = document.getElementById('statsTopContainer');
+  const statsTopMeta       = document.getElementById('statsTopMeta');
+  const statsLaunchBtn     = document.getElementById('statsLaunch');
+  const statsBackBtn       = document.getElementById('statsBack');
+  const statsResetBtn      = document.getElementById('statsReset');
+
+  function loadClassicHistory() {
+    try {
+      const raw = localStorage.getItem(STATS_KEY);
+      if (!raw) return { attempts: [] };
+      const parsed = JSON.parse(raw);
+      if (!parsed || !Array.isArray(parsed.attempts)) return { attempts: [] };
+      return parsed;
+    } catch (e) {
+      return { attempts: [] };
+    }
+  }
+
+  function saveClassicHistory(data) {
+    try {
+      localStorage.setItem(STATS_KEY, JSON.stringify(data));
+    } catch (e) {
+      // localStorage plein ou indisponible — on ignore silencieusement
+    }
+  }
+
+  function saveClassicAttempt(attempt) {
+    const data = loadClassicHistory();
+    data.attempts.push(attempt);
+    if (data.attempts.length > MAX_ATTEMPTS_KEPT) {
+      data.attempts = data.attempts.slice(-MAX_ATTEMPTS_KEPT);
+    }
+    saveClassicHistory(data);
+  }
+
+  function clearClassicHistory() {
+    try { localStorage.removeItem(STATS_KEY); } catch (e) {}
+  }
+
+  // ─── GRAPHIQUE PROGRESSION (canvas natif) ──────────────────────────
+  function renderProgressChart(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-chart-empty';
+      empty.textContent = 'Lancez votre première partie pour voir votre progression.';
+      container.appendChild(empty);
+      return;
+    }
+
+    const wrap = document.createElement('div');
+    wrap.className = 'stats-chart-wrap';
+    const canvas = document.createElement('canvas');
+    wrap.appendChild(canvas);
+    container.appendChild(wrap);
+
+    // Limite aux 20 dernières tentatives pour la lisibilité
+    const data = attempts.slice(-20);
+    const total = data[0].total;
+
+    const dpr = window.devicePixelRatio || 1;
+    const cssW = wrap.clientWidth;
+    const cssH = wrap.clientHeight;
+    canvas.width  = cssW * dpr;
+    canvas.height = cssH * dpr;
+    canvas.style.width  = cssW + 'px';
+    canvas.style.height = cssH + 'px';
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+
+    const padL = 38, padR = 16, padT = 18, padB = 28;
+    const W = cssW - padL - padR;
+    const H = cssH - padT - padB;
+
+    const maxY = Math.max(total, ...data.map(d => d.correct));
+    const niceMax = total; // l'axe va de 0 au total de questions
+
+    // Style général
+    ctx.font = '10px Oswald, sans-serif';
+    ctx.fillStyle = 'rgba(238,242,248,0.55)';
+    ctx.strokeStyle = 'rgba(201,168,76,0.18)';
+    ctx.lineWidth = 1;
+
+    // Grille horizontale (4 lignes) + libellés Y
+    const ySteps = 4;
+    for (let i = 0; i <= ySteps; i++) {
+      const y = padT + (H * i / ySteps);
+      ctx.beginPath();
+      ctx.moveTo(padL, y);
+      ctx.lineTo(padL + W, y);
+      ctx.strokeStyle = i === ySteps ? 'rgba(201,168,76,0.35)' : 'rgba(201,168,76,0.1)';
+      ctx.stroke();
+      const val = Math.round(niceMax * (1 - i / ySteps));
+      ctx.fillStyle = 'rgba(238,242,248,0.4)';
+      ctx.textAlign = 'right';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(val, padL - 6, y);
+    }
+
+    // Coordonnées des points
+    const n = data.length;
+    const xFor = i => n === 1 ? padL + W / 2 : padL + (W * i / (n - 1));
+    const yFor = v => padT + H * (1 - v / niceMax);
+
+    // Aire sous la courbe
+    const grad = ctx.createLinearGradient(0, padT, 0, padT + H);
+    grad.addColorStop(0, 'rgba(201,168,76,0.35)');
+    grad.addColorStop(1, 'rgba(201,168,76,0)');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.moveTo(xFor(0), padT + H);
+    data.forEach((d, i) => ctx.lineTo(xFor(i), yFor(d.correct)));
+    ctx.lineTo(xFor(n - 1), padT + H);
+    ctx.closePath();
+    ctx.fill();
+
+    // Ligne
+    ctx.strokeStyle = '#c9a84c';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    data.forEach((d, i) => {
+      const x = xFor(i), y = yFor(d.correct);
+      if (i === 0) ctx.moveTo(x, y); else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    // Points
+    data.forEach((d, i) => {
+      const x = xFor(i), y = yFor(d.correct);
+      ctx.beginPath();
+      ctx.arc(x, y, 3.5, 0, Math.PI * 2);
+      ctx.fillStyle = '#f0dfa0';
+      ctx.fill();
+      ctx.strokeStyle = '#0a0804';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    });
+
+    // Labels X (n° de tentative — on affiche au max ~6 labels)
+    const labelStep = Math.max(1, Math.ceil(n / 6));
+    ctx.fillStyle = 'rgba(238,242,248,0.45)';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'top';
+    const startIdx = attempts.length - n; // index global de data[0]
+    data.forEach((d, i) => {
+      if (i % labelStep !== 0 && i !== n - 1) return;
+      const globalNum = startIdx + i + 1;
+      ctx.fillText(`#${globalNum}`, xFor(i), padT + H + 6);
+    });
+
+    // Meilleur score : marqueur
+    const bestVal = Math.max(...data.map(d => d.correct));
+    const bestIdx = data.findIndex(d => d.correct === bestVal);
+    if (bestIdx >= 0) {
+      const x = xFor(bestIdx), y = yFor(bestVal);
+      ctx.beginPath();
+      ctx.arc(x, y, 6, 0, Math.PI * 2);
+      ctx.strokeStyle = '#f0dfa0';
+      ctx.lineWidth = 1.5;
+      ctx.stroke();
+    }
+  }
+
+  // ─── TOP 5 QUESTIONS RATÉES ────────────────────────────────────────
+  function renderTopMissed(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-empty';
+      empty.textContent = 'Aucune partie jouée pour le moment.';
+      container.appendChild(empty);
+      return;
+    }
+
+    // Comptage cumulé sur toutes les tentatives
+    const counter = new Map(); // key: year (unique), value: { year, answer, count }
+    attempts.forEach(att => {
+      (att.missed || []).forEach(m => {
+        const key = m.year;
+        const entry = counter.get(key);
+        if (entry) entry.count++;
+        else counter.set(key, { year: m.year, answer: m.answer, count: 1 });
+      });
+    });
+
+    if (counter.size === 0) {
+      const empty = document.createElement('div');
+      empty.className = 'stats-empty';
+      empty.textContent = 'Aucune erreur enregistrée. Bravo !';
+      container.appendChild(empty);
+      return;
+    }
+
+    const sorted = [...counter.values()]
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const wrap = document.createElement('div');
+    wrap.className = 'stats-top';
+    sorted.forEach((entry, idx) => {
+      const row = document.createElement('div');
+      row.className = 'stats-top-row';
+      row.innerHTML = `
+        <div class="stats-top-rank">${idx + 1}</div>
+        <div class="stats-top-q">
+          ${escapeHtml(entry.year)}
+          <small>Réponse : ${escapeHtml(entry.answer)}</small>
+        </div>
+        <div class="stats-top-count">${entry.count}× ratée</div>
+      `;
+      wrap.appendChild(row);
+    });
+    container.appendChild(wrap);
+  }
+
+  // ─── RÉSUMÉ NUMÉRIQUE ─────────────────────────────────────────────
+  function renderSummary(container, attempts) {
+    container.innerHTML = '';
+    if (!attempts.length) {
+      container.innerHTML = `
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Parties</div></div>
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Meilleur score</div></div>
+        <div class="stats-summary-item"><div class="stats-summary-val">—</div><div class="stats-summary-label">Moyenne</div></div>
+      `;
+      return;
+    }
+    const total = attempts[0].total;
+    const best = Math.max(...attempts.map(a => a.correct));
+    const avg = Math.round(attempts.reduce((s, a) => s + a.correct, 0) / attempts.length);
+    container.innerHTML = `
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${attempts.length}</div>
+        <div class="stats-summary-label">Parties jouées</div>
+      </div>
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${best}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
+        <div class="stats-summary-label">Meilleur score</div>
+      </div>
+      <div class="stats-summary-item">
+        <div class="stats-summary-val">${avg}<span style="font-size:0.7em;opacity:0.6">/${total}</span></div>
+        <div class="stats-summary-label">Moyenne</div>
+      </div>
+    `;
+  }
+
+  // ─── AFFICHER L'ÉCRAN DE STATS ─────────────────────────────────────
+  function showStatsScreen() {
+    modeSelector.style.display = 'none';
+    statsScreen.classList.add('show');
+
+    const data = loadClassicHistory();
+    const attempts = data.attempts;
+
+    renderSummary(statsSummary, attempts);
+    renderProgressChart(statsChartContainer, attempts);
+    renderTopMissed(statsTopContainer, attempts);
+
+    statsChartMeta.textContent = attempts.length
+      ? (attempts.length > 20 ? `20 dernières sur ${attempts.length}` : `${attempts.length} tentative${attempts.length > 1 ? 's' : ''}`)
+      : '';
+    statsTopMeta.textContent = '';
+
+    statsResetBtn.style.display = attempts.length ? 'block' : 'none';
+  }
+
+  function hideStatsScreen() {
+    statsScreen.classList.remove('show');
+    modeSelector.style.display = 'block';
+  }
+
+  statsBackBtn.addEventListener('click', hideStatsScreen);
+
+  statsLaunchBtn.addEventListener('click', () => {
+    statsScreen.classList.remove('show');
+    gameMode = 'classic';
+    initClassicMode();
+  });
+
+  statsResetBtn.addEventListener('click', () => {
+    if (confirm('Réinitialiser toutes vos statistiques pour ce quiz ? Cette action est irréversible.')) {
+      clearClassicHistory();
+      showStatsScreen();
+    }
+  });
+
+  // Re-render du graphique au resize (sinon le canvas reste pixellisé)
+  let resizeTimer = null;
+  window.addEventListener('resize', () => {
+    if (!statsScreen.classList.contains('show')) return;
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => {
+      const data = loadClassicHistory();
+      renderProgressChart(statsChartContainer, data.attempts);
+    }, 150);
+  });
+
 
   (async () => {
     currentUser = await getCurrentUser();
